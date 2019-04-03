@@ -1,0 +1,57 @@
+<template>
+    <div :class="$style.root">
+
+    </div>
+</template>
+
+<script>
+
+    // import '../../../public/js/echarts-all-3.js'
+    // import '../../../public/js/echarts-liquidfill.min.js'
+    export default {
+        name: "test",
+        mounted() {
+            let option={
+                backgroundColor: '#1b2735',
+                title: {
+                    text: 'CPU使用率',
+                    textStyle: {
+                        fontWeight: 'normal',
+                        fontSize: 25,
+                        color: 'rgb(97, 142, 205)'
+                    }
+                },
+                series: [{
+                    type: 'liquidFill',
+                    radius: '80%',
+                    data: [0.025,0.025,0.025,0.025,0.025],
+                    backgroundStyle: {
+                        borderWidth: 5,
+                        borderColor: 'rgb(255,0,255,0.9)',
+                        color: '#0d425e'
+                    },
+                    label: {
+                        normal: {
+                            formatter: 0.025 * 100 + '%',
+                            textStyle: {
+                                fontSize: 50
+                            }
+                        }
+                    }
+                }]
+            };
+
+            var myChart = echarts.init(this.$el);
+            //使用制定的配置项和数据显示图表
+            myChart.setOption(option);
+
+        }
+    }
+</script>
+
+<style lang="scss" module>
+ .root{
+     width: 100%;
+     height: 100%;
+ }
+</style>

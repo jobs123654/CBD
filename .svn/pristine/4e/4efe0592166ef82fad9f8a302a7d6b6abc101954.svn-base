@@ -1,0 +1,21 @@
+<template>
+
+</template>
+
+<script>
+    export default {
+        name: "OveryearsIncome",
+        data:function () {
+            return{
+
+            }
+        },
+        methods:{
+
+        }
+    }
+</script>
+
+<style scoped>
+
+</style>

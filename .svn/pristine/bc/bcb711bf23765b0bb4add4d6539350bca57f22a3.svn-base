@@ -1,0 +1,123 @@
+import axios from "axios";
+const mockURL='/mock';
+const path=config.moudlePath
+
+export const getData = async param => {
+  let data = await axios(`${mockURL}/`);
+};
+
+export const getJX = async param => {
+  let data = await axios(`/geojson/DOMAIN_XJ_CBD.json`);
+  return data.data.features;
+};
+
+export const getLY = async param => {
+  let data = await axios(`/geojson/LY_CBD.json`);
+  return data.data.features;
+};
+
+export const getXY = async param => {
+  let data = await axios(`/geojson/cbd经营地址.json`);
+  return data.data.features;
+};
+
+export const getQY = async param => {
+  let data = await axios(`/geojson/cbd经营地址.json`);
+  return data.data.features;
+};
+
+
+
+
+/*大屏图表数据*/
+
+/*返回GDP占比
+* 根据param更新对应的图表
+* 0 功能区
+* 1 中心区
+* */
+export const getGDPZB=async param=>{
+
+  let data ='';
+  if (param){
+    data= await axios(`${path}datasetId=337&cfg={"rows":[],"columns":[{"columnName":"YEAR","filterType":"eq","values":[],"id":"fdf1a411-de7a-425b-9243-1a7faaa070d0"}],"filters":[],"values":[{"column":"GDPZB","aggType":"sum"}]}`);
+  } else{
+    data= await axios(`${path}datasetId=332&cfg={"rows":[],"columns":[{"columnName":"YEAR","filterType":"eq","values":[],"id":"dc33cf4f-94d5-4a55-9291-15e733708b8a"}],"filters":[],"values":[{"column":"GDPZB","aggType":"sum"}]}`);
+  }
+  return data
+}
+
+
+/*
+*返回历年GDP收入
+* */
+export const getGDPIncome=async param=>{
+  let data ='';
+  if (param){
+    data= await axios("${path}"+config.ZXQAPI[0]['TaxIncomeApi']);
+  } else{
+    data= await axios(`${path}datasetId=331&cfg= {"rows":[],"columns":[{"columnName":"YEAR","filterType":"eq","values":[],"id":"e62eb025-9ec5-4bbf-aa47-c8b42f0c98a9"}],"filters":[],"values":[{"column":"GDP","aggType":"sum"}]}`);
+  }
+  return data
+}
+
+
+/*
+* 历年税收收入
+* */
+export const getTaxIncome=async param=>{
+
+  let data ='';
+  if (param){
+    data= await axios(`${path}datasetId=351&cfg={"rows":[],"columns":[{"columnName":"YEAR","filterType":"eq","values":[],"id":"98c978c1-fa7c-46ba-a0b3-55cb930bf63f"}],"filters":[],"values":[{"column":"TAX","aggType":"sum"}]}`);
+  } else{
+    data= await axios(`${path}datasetId=350&cfg={"rows":[],"columns":[{"columnName":"YEAR","filterType":"eq","values":[],"id":"408e0d21-dcde-4f83-8811-2bb708268909"}],"filters":[],"values":[{"column":"TAX","aggType":"sum"}]}
+`);
+  }
+  return data
+}
+/*
+*历年税收占比
+* */
+export const getTaxIncomeZB=async param=>{
+  let data ='';
+  if (param){
+    data= await axios(`${path}datasetId=338&cfg={"rows":[],"columns":[{"columnName":"YEAR","filterType":"eq","values":[],"id":"f20c23ae-7bc8-442a-8665-33a3c1b772bc"}],"filters":[],"values":[{"column":"TAXZB","aggType":"sum"}]}`);
+  } else{
+    data= await axios(`${path}datasetId=333&cfg={"rows":[],"columns":[{"columnName":"YEAR","filterType":"eq","values":[],"id":"1f35f99b-4718-4df1-8029-a34b912749b7"}],"filters":[],"values":[{"column":"TAXZB","aggType":"sum"}]}`);
+  }
+  return data
+}
+
+/*
+* 历年资产规模
+*
+* */
+export const getAssetSize=async param=>{
+
+  let data ='';
+  if (param){
+    data= await axios(`${path}datasetId=336&cfg={"rows":[],"columns":[{"columnName":"YEAR","filterType":"eq","values":[],"id":"efba7cba-53e1-4bbc-a2b8-ff62ba7d83ed"}],"filters":[],"values":[{"column":"ASSETSIZE","aggType":"sum"}]}`);
+  } else{
+    data= await axios(`${path}datasetId=329&cfg={"rows":[],"columns":[{"columnName":"YEAR","filterType":"eq","values":[],"id":"954740c0-43c9-4a64-937b-940165e22ed0"}],"filters":[],"values":[{"column":"ASSETSIZE","aggType":"sum"}]}`);
+  }
+  return data
+}
+
+/*
+/!*
+* 历年资产规模占比
+*
+* */
+
+export const getAssetSizeZB=async param=>{
+
+  let data ='';
+  if (param){
+    data= await axios(`${path}datasetId=339&cfg={"rows":[],"columns":[{"columnName":"YEAR","filterType":"eq","values":[],"id":"93c02ef8-71cc-4ec3-8b56-d0b515ea9496"}],"filters":[],"values":[{"column":"ASSETSIZEZB","aggType":"sum"}]}`);
+  } else{
+    data= await axios(`${path}datasetId=334&cfg={"rows":[],"columns":[{"columnName":"YEAR","filterType":"eq","values":[],"id":"92a045e1-0166-4ff8-bbdd-3b41e276e45d"}],"filters":[],"values":[{"column":"ASSETSIZEZB","aggType":"sum"}]}`);
+  }
+  return data
+}
+

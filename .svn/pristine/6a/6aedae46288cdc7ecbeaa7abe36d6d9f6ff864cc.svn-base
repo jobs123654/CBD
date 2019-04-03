@@ -1,0 +1,150 @@
+<template>
+  <div class="search-root">
+    <div class="title">
+      高级查询
+      <Icon type="ios-close-circle-outline" title="关闭" @click="close"/>
+    </div>
+    <div class="content">
+      <div class="radio">
+        查询数据
+        <RadioGroup v-model="queryData">
+          <Radio label="楼宇"></Radio>
+          <Radio label="企业"></Radio>
+        </RadioGroup>
+      </div>
+      <div class="radio">
+        查询方式
+        <RadioGroup v-model="queryFun">
+          <Radio label="属性查询"></Radio>
+          <Radio label="空间查询"></Radio>
+        </RadioGroup>
+      </div>
+      <div class="query queryInput" v-if="queryFun == '属性查询'">
+        <Input
+          search
+          enter-button
+          placeholder="输入查询名称"
+          style="width: 200px"
+          size="small"
+          @on-search="searchBySql"
+        />
+      </div>
+      <div class="query" v-else>
+        <Button icon="md-square-outline" size="small">矩形</Button>
+        <Button icon="md-radio-button-off" size="small">圆形</Button>
+        <Button icon="md-crop" size="small">多边形</Button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "MapSearch",
+  data() {
+    return {
+      queryData: "楼宇",
+      queryFun: "属性查询",
+      publicConfig: config.resourceList,
+      color: "#DC143C"
+    };
+  },
+  components: {},
+  computed: {},
+  mounted() {},
+  beforeDestroy() {},
+  methods: {
+    close() {
+      this.$emit("closeSearch");
+    },
+    searchBySql(name) {
+      if (name != "") {
+        let param = {};
+        if (this.queryData == "楼宇") {
+          param = {
+            url: this.publicConfig[1].map_url,
+            name: this.publicConfig[1].name,
+            datasource: this.publicConfig[1].datasource,
+            dataset: this.publicConfig[1].map_dataset,
+            queryname: name,
+            field: this.publicConfig[1].other_pro_name
+          };
+        } else {
+          param = {
+            url: this.publicConfig[2].map_url,
+            name: this.publicConfig[2].name,
+            datasource: this.publicConfig[2].datasource,
+            dataset: this.publicConfig[2].map_dataset,
+            queryname: name,
+            field: this.publicConfig[2].queryField
+          };
+        }
+        this.queryBySql(param);
+      } else {
+        this.$Message.error("请输入楼宇/企业名称进行查询！");
+      }
+    },
+    queryBySql(param) {
+      let self = this;
+      let attribute = new SuperMap.QueryBySQLParameters({
+        queryParams: {
+          name: param.dataset + "@" + param.datasource,
+          attributeFilter: param.field + " like '%" + param.queryname + "%'"
+        }
+      });
+      L.supermap.queryService(param.url).queryBySQL(attribute, res => {
+        if (res.result.currentCount) {
+          let resObj = {
+            color: self.color,
+            features: res.result.recordsets[0].features.features,
+            name: param.name,
+            type: res.result.recordsets[0].features.type
+          };
+          EventBus.$emit("drawQuery", resObj);
+        } else {
+          self.$Message.info("查询无结果！");
+        }
+      });
+    }
+  }
+};
+</script>
+
+<style lang='scss' scoped>
+.search-root {
+  width: 240px;
+  height: 160px;
+  background: #2e4c68;
+  color: #fff;
+  border: 1px solid #028ccf;
+  .title {
+    padding: 5px 10px;
+    border-bottom: 1px solid #fff;
+    .ivu-icon-ios-close-circle-outline {
+      font-size: 20px;
+      float: right;
+      margin-top: 1px;
+      cursor: pointer;
+    }
+  }
+  .content {
+    padding: 0px 10px;
+    font-size: 14px;
+    .radio {
+      height: 35px;
+      line-height: 35px;
+    }
+    .query {
+      height: 40px;
+      line-height: 40px;
+      button {
+        margin-left: 5px;
+      }
+    }
+    .queryInput {
+      margin-top: 7px;
+      margin-left: 2px;
+    }
+  }
+}
+</style>

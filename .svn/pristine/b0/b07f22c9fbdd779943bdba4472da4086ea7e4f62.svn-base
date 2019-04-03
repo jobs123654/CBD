@@ -1,0 +1,61 @@
+<template>
+ <div :class="$style.root">
+     <p @click="">
+         <img src="../../assets/images/工具/量距.png" alt>
+         <span>查询</span>
+     </p>
+     <p @click="">
+         <img src="../../assets/images/工具/量距.png" alt>
+         <span>测距</span>
+     </p>
+     <p @click="">
+         <img src="../../assets/images/工具/量距.png" alt>
+         <span>测面</span>
+     </p>
+     <p @click="">
+         <img src="../../assets/images/工具/量距.png" alt>
+         <span>点选</span>
+     </p>
+     <p @click="">
+         <img src="../../assets/images/工具/量距.png" alt>
+         <span>清除</span>
+     </p>
+     <p @click="">
+         <img src="../../assets/images/工具/量距.png" alt>
+         <span>全幅</span>
+     </p>
+     <p @click="">
+         <img src="../../assets/images/工具/量距.png" alt>
+         <span>全屏</span>
+     </p>
+
+ </div>
+</template>
+
+<script>
+    export default {
+        name: "HomeMapTool",
+        methods:function () {
+
+        }
+    }
+</script>
+
+<style lang="scss" module>
+
+    $font_color:#fff;
+ .root{
+
+     display: flex;
+     p{
+         display: flex;
+         cursor: pointer;
+         margin-left: 0.12rem;
+         span{
+             color: $font_color;
+         }
+     }
+
+
+ }
+</style>

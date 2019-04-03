@@ -1,0 +1,96 @@
+<template>
+  <div class="grid">
+    <Checkbox
+      v-for="(item, index) in listData"
+      :key="index"
+      v-show="item.file_name"
+      @on-change="addGrid($event, item)"
+    >{{ item.name }}</Checkbox>
+  </div>
+</template>
+
+<script>
+import axios from "axios";
+
+export default {
+  name: "ZoningGrid",
+  data() {
+    return {
+      listData: sceneConfig.zoningGridConfig
+    };
+  },
+  mounted() {},
+  beforeDestroy() {},
+  methods: {
+    async addGrid(node, item) {
+      if (node) {
+        let res = await this.getGeoJson(item.file_name);
+        if (res.status == 200) {
+          let points = res.data.features[0].geometry.coordinates[0];
+          let wallStr = "[";
+          points.forEach((point, i) => {
+            let pointC = new Cesium.Cartesian3(point[0], point[1], 30);
+            let pointCartographic = Viewer.scene.camera._projection.unproject(
+              pointC
+            );
+            let pointCX = Cesium.Math.toDegrees(pointCartographic.longitude);
+            let pointCY = Cesium.Math.toDegrees(pointCartographic.latitude);
+            if (i == 0) {
+              wallStr += pointCX + "," + pointCY;
+            } else {
+              wallStr += "," + pointCX + "," + pointCY;
+            }
+          });
+          wallStr += "]";
+          let wall = JSON.parse(wallStr);
+          this.addCorridor(wall, item);
+        }
+      } else {
+        this.removeCorridor(item);
+      }
+    },
+    getGeoJson(file) {
+      let file_road = "./geojson/scene/";
+      return axios.get(file_road + file);
+    },
+    addCorridor(Arr, item) {
+      if (Viewer) {
+        Viewer.entities.add({
+          id: item.index,
+          name: item.name,
+          corridor: {
+            positions: Cesium.Cartesian3.fromDegreesArray(Arr),
+            material: Cesium.Color.fromCssColorString(item.color),
+            outline: !0,
+            height: 50, // 椭圆体表面与位置之间的距离
+            width: 5, // 走廊边缘之间的距离
+            outlineColor: Cesium.Color.GHOSTWHITE,
+            cornerType: Cesium.CornerType.BEVELED,
+            extrudedHeight: 1 // 椭球面和挤压面之间的距离
+          }
+        });
+        Viewer.zoomTo(Viewer.entities);
+      }
+    },
+    removeCorridor(item) {
+      if (Viewer) {
+        Viewer.entities.removeById(item.index);
+      }
+    }
+  }
+};
+</script>
+
+<style lang='scss' scoped>
+.grid {
+  background: url(../../../assets/images/区域网格面板.png) center/100% 100%;
+  font-size: 14px;
+  color: #ffffff;
+  position: absolute;
+  top: 0.45rem;
+  z-index: 10;
+  padding: 5px 10px;
+  cursor: pointer;
+  width: 1.1rem;
+}
+</style>

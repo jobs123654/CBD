@@ -1,0 +1,63 @@
+<template>
+	<div :class="$style.root">
+
+	</div>
+</template>
+
+<script>
+	/*通用版charts组件*/
+
+	import echarts from 'echarts'
+	// import '../../../public/js/echarts-liquidfill.min.js'
+
+	//使用
+
+	export default {
+		name: "BaseCharts",
+		props: {
+			option: Object,
+			// data:[],
+		},
+		data: function() {
+			return {
+
+			}
+		},
+		mounted: function() {
+			this.init();
+		},
+		methods: {
+		 /*
+		 * title 图表标题
+		 * x x轴数据
+		 * y y轴数据
+		 * */
+			init: function(title,x,y) {
+				var myChart = echarts.init(this.$el);
+				// 使用刚指定的配置项和数据显示图表。
+				// this.option.series.data=this.data;
+                if (title){
+                 this.option.title.text=title
+                }
+                if (x){
+                 this.option.xAxis.data=x;
+
+                } if (y){
+              this.option.series[0].data=y;
+             }
+
+				myChart.setOption(this.option);
+			},
+
+
+		}
+	}
+</script>
+
+<style lang="scss" module>
+	.root {
+		width: 100%;
+		height: 100%;
+
+	}
+</style>

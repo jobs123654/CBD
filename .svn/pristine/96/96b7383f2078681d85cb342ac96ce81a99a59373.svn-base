@@ -1,0 +1,200 @@
+import Vue from "vue";
+import Vuex from "vuex";
+
+Vue.use(Vuex);
+export default new Vuex.Store({
+  state: {
+    viewPoint: {
+      x: 512621.78,
+      y: 306055.08,
+      z: 0
+    },
+    zoom: 7,
+    features: [],
+    colorFilter: [],
+    analysisData: [],
+    currentList: {},
+    infoBoxData: {}
+  },
+  mutations: {
+    change: function(state, value) {
+      state.viewPoint = value;
+    },
+    changeZoom: function(state, value) {
+      state.zoom = value;
+    },
+    setFeatures(state, value) {
+      state.features = value;
+    },
+    pushFeature(state, value) {
+      state.features.push(value);
+    },
+    clearFeature(state) {
+      state.features = [];
+    },
+    setColorFilter(state, value) {
+      state.colorFilter = value;
+    },
+    setAnalysisData(state, value) {
+      state.analysisData = value;
+    },
+    setCurrentList(state, value) {
+      state.currentList = value;
+    },
+    setInfoBoxData(state, value){
+      state.infoBoxData = value;
+    }
+  },
+  actions: {
+    getAnalysisData(context) {
+      let {
+        left_table_id,
+        right_table_id,
+        foreignTableName,
+        map_dataset,
+        datasource,
+        map_url
+      } = config.resourceList[0];
+      foreignTableName = "regioncldata a";
+      let joinFilter = `${left_table_id} = ${right_table_id}`,
+        layerName = `${map_dataset}@${datasource}`,
+        fields = [
+          "a.year as 年份",
+          "a.regionname as 街乡名称",
+          "a.projectnum as 楼宇数量",
+          "a.entnum as 企业数量",
+          "a.swentnum as 商务和租赁服务业",
+          "a.jrentnum as 金融业",
+          "a.plentnum as 批发零售业",
+          "a.fdcentnum as 房地产业",
+          "a.kjentnum as 科技研究和技术服务业",
+          "a.wtentnum as 文化体育和娱乐业",
+          "a.otherentnum as 其他",
+          "a.tax as 税收收入",
+          "a.taxtb as 税收增幅",
+          "a.qjsr as 区级收入"
+        ],
+        url = map_url;
+
+      let joinItem = new SuperMap.JoinItem({
+        foreignTableName: foreignTableName,
+        joinFilter: joinFilter,
+        joinType: "LEFTJOIN"
+      });
+      let param = new SuperMap.QueryBySQLParameters({
+        queryParams: new SuperMap.FilterParameter({
+          name: layerName,
+          joinItems: [joinItem],
+          fields: fields,
+          attributeFilter: "1 = 1"
+        })
+      });
+      L.supermap.queryService(url).queryBySQL(param, serviceResult => {
+        let result = serviceResult.result;
+        if (result.recordsets.length == 0) {
+          return;
+        }
+        let geojson = result.recordsets[0].features;
+        let analysisData = geojson.features
+          .map(e => e.properties)
+          .reduce((p, c) => {
+            if (p.map(e => e.year).indexOf(c["年份"]) == -1) {
+              p.push({ year: c["年份"], data: c });
+              return p;
+            } else {
+              let temp = p.filter(e => e.year == c["年份"])[0];
+              temp.data.楼宇数量 =
+                parseFloat(temp.data.楼宇数量) + parseFloat(c.楼宇数量);
+              temp.data.企业数量 =
+                parseFloat(temp.data.企业数量) + parseFloat(c.企业数量);
+              temp.data.商务和租赁服务业 =
+                parseFloat(temp.data.商务和租赁服务业) +
+                parseFloat(c.商务和租赁服务业);
+              temp.data.金融业 =
+                parseFloat(temp.data.金融业) + parseFloat(c.金融业);
+              temp.data.批发零售业 =
+                parseFloat(temp.data.批发零售业) + parseFloat(c.批发零售业);
+              temp.data.房地产业 =
+                parseFloat(temp.data.房地产业) + parseFloat(c.房地产业);
+              temp.data.科技研究和技术服务业 =
+                parseFloat(temp.data.科技研究和技术服务业) +
+                parseFloat(c.科技研究和技术服务业);
+              temp.data.文化体育和娱乐业 =
+                parseFloat(temp.data.文化体育和娱乐业) +
+                parseFloat(c.文化体育和娱乐业);
+              temp.data.其他 = parseFloat(temp.data.其他) + parseFloat(c.其他);
+              temp.data.税收收入 =
+                parseFloat(temp.data.税收收入) + parseFloat(c.税收收入);
+              temp.data.区级收入 =
+                parseFloat(temp.data.区级收入) + parseFloat(c.区级收入);
+              p.filter(e => e.year != c["年份"]).push(temp);
+              return p;
+            }
+          }, [])
+          .sort((a, b) => b.year - a.year);
+        context.commit("setAnalysisData", analysisData);
+      });
+    },
+    clickMap(context, coordnate) {
+      let foreignTableName, layerName, fields, attributeFilter, joinFilter, url;
+      if (context.state.currentList.name == "楼宇分析") {
+        // foreignTableName = foreignTableName;
+        // datasetNames = [`${datasource}:${map_dataset}`];
+        // layerName = `${map_dataset}@${datasource}`;
+        // fields = children[i].queryFields;
+        // attributeFilter = e.queryAttributeFilter;
+        // url = map_url;
+      } else if (context.state.currentList.name == "企业分析") {
+        let QYconfig = config.resourceList.filter(e => e.name == "企业分析")[0];
+        foreignTableName = QYconfig.infoData.tablename;
+        layerName = `${QYconfig.map_dataset}@${QYconfig.datasource}`;
+        fields = QYconfig.infoData.fields;
+        url = QYconfig.map_url;
+        attributeFilter = "";
+        joinFilter = `${QYconfig.map_dataset}.${QYconfig.left_table_id} = t.${
+          QYconfig.right_table_id
+        }`;
+      } else {
+        return;
+      }
+
+      let joinItem = new SuperMap.JoinItem({
+        foreignTableName: foreignTableName,
+        joinFilter: joinFilter,
+        joinType: "LEFTJOIN"
+      });
+      let param = new SuperMap.QueryByGeometryParameters({
+        geometry: L.point(coordnate),
+        queryParams: new SuperMap.FilterParameter({
+          name: layerName,
+          joinItems: [joinItem],
+          fields: fields,
+          attributeFilter: attributeFilter
+        })
+      });
+      L.supermap.queryService(url).queryByGeometry(param, serviceResult => {
+        if (!serviceResult.result) {
+          return;
+        }
+        let geojson = serviceResult.result.recordsets[0].features;
+        // geojson.color = e.color;
+        // geojson.name = e.name;
+
+        if (geojson.features.length === 0) {
+          return;
+        }
+
+        let properties = geojson.features[0].properties;
+
+        let info = {
+          label: "基础信息",
+          props: {}
+        };
+        for (let key in properties) {
+          info.props[key] = properties[key] == "" ? "暂无数据" : properties[key];
+        }
+        context.commit("setInfoBoxData", { title: '企业信息', data:[info]});
+      });
+    }
+  }
+});

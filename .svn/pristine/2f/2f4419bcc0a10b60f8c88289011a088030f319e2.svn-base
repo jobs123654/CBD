@@ -1,0 +1,264 @@
+<template>
+	<div :class="$style.root">
+		<Head @enter="enter" :class="$style.head"></Head>
+		<!--left charts-->
+		<div :class="$style.main">
+			<div :class="$style.left">
+				<BaseCharts  :class="$style.charts" :option="buildingNum" ref="buildingNum"></BaseCharts>
+				<BaseCharts :class="$style.charts" :option="IndustryProportion" ></BaseCharts>
+				<BaseCharts :class="$style.charts" :option="OveryersIncome" ref="GDPIncome"></BaseCharts>
+
+			</div>
+			<!--map-->
+
+                <div :class="$style.map">
+                    <img src='../../assets/images/首页/地图边框0.png' alt="">
+                    <Map :class="$style.mapc" :option="map" v-if="showMap" ref="map" :baseLayer="baseLayer" :boundary="boundary" :key="0" />
+                </div>
+
+			<!--right charts-->
+			<div :class="$style.right">
+				<BaseCharts :class="$style.charts" :option="RightOne" ref="taxIncome"></BaseCharts>
+				<BaseCharts :class="$style.charts" :option="RightTwo" ref="assetSize"></BaseCharts>
+				<BaseCharts :class="$style.charts" :option="RightThree" ref="buildingNum"></BaseCharts>
+			</div>
+		</div>
+		<!--map tool-->
+
+		<TabBtn :class="$style.tabBtn" @func="func" @center="center"></TabBtn>
+
+        <img :class="$style.dec" src="../../assets/images/首页/装饰.png" alt="">
+	</div>
+</template>
+
+<script>
+	import Head from '../home/Head'
+	import Map from '../map/Map'
+
+	import TabBtn from '../toolbar/TabBtn'
+	import DOMAIN_XJ_CBD from "../../../public/geojson/DOMAIN_XJ_CBD";
+	import DOMAIN_GNQ_CBD from "../../../public/geojson/DOMAIN_GNQ_CBD";
+	import BaseCharts from '../home/BaseCharts'
+	import {getGDPZB,getGDPIncome,getTaxIncome,getAssetSize,getBuildingNumsAndTax} from '../../api/api'
+	export default {
+		name: "Home",
+		components: {
+			Head,
+			Map,
+			TabBtn,
+			BaseCharts,
+		},
+		data: function() {
+			return {
+				buildingNum: indexConfig.chartsOption[0],
+				IndustryProportion: indexConfig.chartsOption[1],
+				OveryersIncome: indexConfig.chartsOption[2],
+				RightOne: indexConfig.chartsOption[3],
+				RightTwo: indexConfig.chartsOption[4],
+				RightThree: indexConfig.chartsOption[5],
+				map: config.map,
+				baseLayer: config.baseLayer,
+				boundary: DOMAIN_GNQ_CBD.features[0],
+				streets: DOMAIN_XJ_CBD.features,
+				showMap: true, //控制二维地图的显示和隐藏
+			}
+		},
+		mounted: function() {
+			/*默认加载功能区的数据*/
+		},
+		methods: {
+			enter: function() {
+				this.$router.push("/index");
+			},
+			/*
+			* 0 功能区
+			* 1 中心区
+			* */
+			loadData:function(key){
+				let that=this
+
+				//GDP占比
+				getGDPZB(key).then(function (res) {
+					let c=[];
+					let r=res.data.data
+
+					let target={
+						name:r[0][0],
+						value:r[0][1],
+					};
+					c.push(Object.assign(indexConfig.chartsOption[0].series[0].data[0],target))
+					that.$refs.buildingNum.init('1111',c)
+				}).catch((err)=>{
+					console.log(err)
+				})
+				//待定
+
+
+				// 历年GDP收入
+				getGDPIncome(key).then((res)=>{
+					let con=[];
+					res.data.data=that.mySort(res.data.data);
+					res.data.data.forEach((e,i)=>{
+						con.push(e[1]);
+					});
+					that.$refs.GDPIncome.init('北京CBD功能区历年GDP（万元）',con);
+				});
+				// 历年税收收入
+				getTaxIncome(key).then((res)=>{
+					let con=[];
+					res.data.data=that.mySort(res.data.data);
+					res.data.data.forEach((e,i)=>{
+						con.push(e[1]);
+					});
+
+					that.$refs.taxIncome.init('北京CBD功能区历年税收收入（万元）',con);
+				});
+				//资产规模
+				getAssetSize(key).then((res)=>{
+					let con=[];
+					res.data.data=that.mySort(res.data.data);
+					res.data.data.forEach((e,i)=>{
+						con.push(e[1]);
+					});
+					that.$refs.assetSize.init('北京CBD功能区资产规模（万元）',con);
+				});
+
+				//入驻企业数量
+				if (key){
+				//	切换至中心区option
+					that.$refs.buildingNum.option=indexConfig.chartsOption[6]
+					getBuildingNumsAndTax(key).then((res)=>{
+						let con=[];
+						res.data.data=that.mySort(res.data.data);
+						res.data.data.forEach((e,i)=>{
+							con.push(e[1]);
+						});
+						that.$refs.buildingNum.init('北京CBD功能区资产规模（万元）',con);
+					});
+				}else{
+					getBuildingNumsAndTax(key).then((res)=>{
+						let con=[];
+						res.data.data=that.mySort(res.data.data);
+						res.data.data.forEach((e,i)=>{
+							con.push(e[1]);
+						});
+						that.$refs.buildingNum.init('北京CBD功能区资产规模（万元）',con);
+					});
+				}
+
+
+
+			},
+			/*功能区数据*/
+			func:function () {
+               this.loadData(0);
+			},
+			/*中心区数据*/
+			center:function () {
+				this.loadData(1);
+			},
+			/*排序*/
+			mySort:function (arr) {
+				return arr.sort((a,b)=>Number.parseInt(a[0])-Number.parseInt(b[0]));
+			}
+		}
+	}
+</script>
+
+<style lang="scss" module>
+	.root {
+		height: 900px;
+		overflow: hidden;
+		width: 100%;
+		height: 100%;
+		/*position: relative;*/
+		display: flex;
+		flex-direction: column;
+		background: url('../../assets/images/首页/背景.jpg');
+		/*position: relative;*/
+		/*display: flex;*/
+		/*display: flex;
+       width: 100%;
+       height: 100%;*/
+		.head {
+			border: 1px solid black;
+		}
+        .dec{
+            height: 6%;
+			width: 98%;
+			z-index: 999;
+			position: absolute;
+			bottom: 2%;
+			left: 1.6%;
+        }
+		.main {
+			display: flex;
+			width: 100%;
+			height: 100%;
+			margin-top: 0.7%;
+			align-items: center;
+            padding-left: 1%;
+			.left,
+			.right {
+
+				height: 99%;
+				width: 24%;
+			}
+			.right{
+				margin-left: 1%;
+			}
+
+			.charts {
+				width:96%;
+				height: 27%;
+				margin: 6% auto;
+				background: url('../../assets/images/首页/面板背景.png') top/100% 100%;
+			}
+			.map{
+                position: relative;
+                margin-top: 1.2%;
+
+				/*position: absolute;*/
+				/*1920*/
+				width: 51%;
+				height: 95%;
+                  img{
+                   width: 100%;
+                    height: 100%;
+                    position: absolute;
+                      z-index: 99;
+					  pointer-events: none;
+				  }
+                .mapc{
+                    position: absolute;
+                    top: 0.2%;
+                    left: 2.6%;
+                    width: 97%;
+                    height: 99%;
+                    /*border: 1px solid red;*/
+                    border-bottom-left-radius: 18%;
+                }
+
+
+
+			}
+		}
+
+		.tabBtn {
+			position: absolute;
+			left: 28%;
+			top: 86%;
+			width: 7%;
+            z-index: 9;
+		}
+
+		.maptool {
+            position: absolute;
+            left: 26%;
+            top: 13%;
+            z-index: 9;
+            /*width: 3%;*/
+		}
+	}
+</style>
+

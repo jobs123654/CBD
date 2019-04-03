@@ -1,0 +1,182 @@
+<template>
+  <div class="root"></div>
+</template>
+
+<script>
+export default {
+  name: "Cesium",
+  data() {
+    return {
+      sceneConfig: config.threeDimensional
+    };
+  },
+  mounted() {
+    this.loadMap();
+    this.eventListener();
+  },
+  beforeDestroy() {
+    if (window.Viewer) {
+      try {
+        window.Viewer.destroy();
+      } catch (e) {
+        console.error("摧毁viewer失败！");
+      }
+      window.Viewer = null;
+    }
+  },
+  methods: {
+    loadMap() {
+      let self = this;
+      let viewer = new Cesium.Viewer(this.$el, this.sceneConfig.option);
+      window.Viewer = viewer;
+      viewer._cesiumWidget._creditContainer.style.display = "none";
+      //添加SuperMap iServer发布的影像服务
+      viewer.imageryLayers.addImageryProvider(
+        new Cesium.SuperMapImageryProvider({
+          url: self.sceneConfig.map_url
+        })
+      );
+      let scene = viewer.scene;
+      let widget = viewer.cesiumWidget;
+
+      try {
+        let promise = scene.open(this.url);
+        Cesium.when.all(
+          promise,
+          layers => {
+            let style = new Cesium.Style3D();
+            style.bottomAltitude = -39;
+            layers.forEach(layer => {
+              if (layer.name.indexOf("JZ") == -1) {
+                layer.selectEnabled = false;
+              }
+              layer.style3D = style;
+              layer.refresh();
+            });
+            let point = new Cesium.Cartesian3(
+              self.sceneConfig.center.x,
+              self.sceneConfig.center.y,
+              self.sceneConfig.center.z
+            );
+
+            let pointCartographic = that.scene.camera._projection.unproject(
+              point
+            );
+            //转换至经纬度
+            let pointCX = Cesium.Math.toDegrees(pointCartographic.longitude);
+            let pointCY = Cesium.Math.toDegrees(pointCartographic.latitude);
+
+            that.scene.camera.setView({
+              destination: Cesium.Cartesian3.fromDegrees(
+                pointCX,
+                pointCY,
+                pointCartographic.height
+              ),
+              orientation: {
+                heading: 0,
+                pitch: -Cesium.Math.PI_OVER_TWO,
+                roll: 0
+              }
+            });
+          },
+          e => {
+            let title = "加载SCP失败，请检查网络连接状态或者url地址是否正确？";
+            widget.showErrorPanel(title, undefined, e);
+          }
+        );
+      } catch (e) {
+        if (widget._showRenderLoopErrors) {
+          let title = "渲染时发生错误，已停止渲染。";
+          widget.showErrorPanel(title, undefined, e);
+        }
+      }
+    },
+    eventListener() {
+      let that = this;
+      this.viewer.scene.camera.changed.addEventListener(function(e) {
+        let p = that.viewer.camera.position;
+        if (that.$parent.$refs.map) {
+          that.$parent.$refs.map.setCenter([p.x, p.y]);
+        }
+      });
+
+      let handler = new Cesium.ScreenSpaceEventHandler(
+        this.viewer.scene.canvas
+      );
+      handler.setInputAction(function(movement) {
+        let height = Math.ceil(
+          that.viewer.camera.positionCartographic.height
+        ).toFixed(3);
+      }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+      handler.setInputAction(function(e) {
+        if (that.$parent.$refs.map) {
+          that.$parent.$refs.map.setZoom(that.viewer.camera.getMagnitude());
+        }
+      }, Cesium.ScreenSpaceEventType.WHEEL);
+    },
+    getLonlat(p) {
+      let point = new Cesium.Cartesian3(p.x, p.y, this.center.z);
+      let pointCartographic = this.scene.camera._projection.unproject(point);
+      let pointCX = Cesium.Math.toDegrees(pointCartographic.longitude);
+      let pointCY = Cesium.Math.toDegrees(pointCartographic.latitude);
+      return {
+        x: pointCX,
+        y: pointCY,
+        z: pointCartographic.height
+      };
+    },
+    setZoom(v) {
+      this.viewer.camera.zoomOut(v * 100);
+    },
+    changeCameraPosition(p) {
+      let o = this.getLonlat(p);
+      this.scene.camera.setView({
+        destination: Cesium.Cartesian3.fromDegrees(o.x, o.y, o.z),
+        orientation: {
+          heading: 0,
+          pitch: -Cesium.Math.PI_OVER_TWO,
+          roll: 0
+        }
+      });
+    },
+    calculateAltitude(bounds) {
+      let alt = bounds.right - bounds.left;
+      if (alt > 15000) {
+        alt = alt - 10000;
+      } else if (alt > 1900) {
+        alt = alt - 1000;
+      } else if (alt > 100) {
+        alt = alt - 100;
+      } else if (alt > 10) {
+        alt = alt - 10;
+      }
+      return alt;
+    },
+    flyTo(point) {
+      this.viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(point.x, point.y, point.z), // 设置位置
+        orientation: {
+          heading: 0.723822947387097,
+          pitch: -0.45061029898791416,
+          roll: 6.283185307179586
+        },
+        duration: 5, // 设置飞行持续时间，默认会根据距离来计算
+        complete: function() {
+          console.log("到达目的地");
+        },
+        cancle: function() {
+          console.log("飞行取消");
+        }
+      });
+    }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+.root {
+  width: 100%;
+  height: 100%;
+}
+</style>

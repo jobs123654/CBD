@@ -1,0 +1,569 @@
+// eslint-disable-next-line no-undef
+config = {
+  title: "CBD区域楼宇/企业展示分析系统",
+  map: {
+    center: [508925.06, 305125.97],
+    zoom: 7,
+    spatialReference: {
+      projection: "identity",
+      resolutions: [
+        140.00000000000003,
+        70.00000000000001,
+        28.0,
+        14.0,
+        7.0,
+        2.8000000000000003,
+        1.4000000000000001,
+        0.5600000000000002
+      ],
+      fullExtent: {
+        top: 328267.01403450756,
+        left: 498274.8324539737,
+        bottom: 292043.1403319263,
+        right: 534368.7214544317
+      }
+    },
+    attribution: false
+  },
+  baseLayer: {
+    urlTemplate:
+      "http://192.168.46.30:8090/iserver/services/map-Map/wmts100/朝阳区矢量地图/default/Custom_朝阳区矢量地图/{z}/{y}/{x}.png",
+    repeatWorld: false,
+    tileSystem: [1, -1, 498274.8324539737, 328267.01403450756]
+  },
+  /*影像图*/
+  imgLayer: {
+    urlTemplate:
+      "http://192.168.46.30:8090/iserver/services/map-Map/wmts100/朝阳区影像地图/default/Custom_朝阳区影像地图/{z}/{y}/{x}.png",
+    tileSystem: [1, -1, 493348.00833995664, 333299.3163286119]
+  },
+  /*三维图*/
+  threeDimensional: {
+    option: {
+      animation: false, //动画控制不显示
+      baseLayerPicker: false, //图层控制显示
+      geocoder: false, //地名查找不显示
+      timeline: false, //时间线不显示
+      sceneModePicker: false, //投影方式显示
+      navigation: false,
+      selectionIndicator: false,
+      infoBox: false,
+      // eslint-disable-next-line no-undef
+      sceneMode: Cesium.SceneMode.COLUMBUS_VIEW // 哥伦布视图
+    },
+    url: "", // 传参数用
+    // 水晶模
+    emeraldUrl:
+      "http://192.168.46.228:8090/iserver/services/3D-cbd_sjm/rest/realspace",
+    // 白膜
+    albugineaUrl:
+      "http://192.168.46.228:8090/iserver/services/3D-cbd_bm/rest/realspace",
+    // 真实模型
+    sceneUrl:
+      "http://192.168.46.228:8090/iserver/services/3D-CBDMODEL/rest/realspace",
+    map_url:
+      "http://192.168.46.228:8090/iserver/services/map-CBDMAP/rest/maps/%E4%B8%89%E7%BB%B4%E5%BA%95%E5%9B%BE",
+    center: {
+      x: 508925.06,
+      y: 305125.97,
+      z: 1000
+    },
+    gallery: {
+      // 楼座查询
+      height: 750,
+      url:
+        "http://192.168.46.228:8090/iserver/services/map-CBDALL/rest/maps/%E6%A5%BC%E5%BA%A7%E9%9D%A2",
+      foreignTableName: "BUILDINFODATA",
+      joinFilter: "BUILDINFODATA.BUILDNAME=LZ_C_CBD_1_1.MODELNAME",
+      datasetNames: ["CBDGIS:LZ_C_CBD_1_1"],
+      queryParams: {
+        name: "LZ_C_CBD_1_1@CBDGIS",
+        fields: []
+      }
+    },
+    build: {
+      // 楼宇查询
+      url:
+        "http://192.168.46.228:8090/iserver/services/map-CBDALL/rest/maps/%E6%A5%BC%E5%AE%87%E9%9D%A2",
+      foreignTableName: "PPCHANGEDATA",
+      joinFilter: "PPCHANGEDATA.PROJECTNAME=LY_C_CBD.楼宇名称",
+      queryParams: {
+        name: "LY_C_CBD@CBDGIS",
+        fields: []
+      }
+    }
+  },
+  resourceList: [
+    {
+      name: "综合分析",
+      map_url:
+        "http://192.168.46.228:8090/iserver/services/map-CBDALL/rest/maps/CBD%E8%A1%97%E4%B9%A1",
+      foreignTableName: "regionchangedata", // 外部表的名称
+      datasource: "CBDGIS",
+      map_dataset: "DOMAIN_XJ_CBD",
+      left_table_id: "简称",
+      right_table_id: "regionname",
+      children: [
+        {
+          name: "楼宇数量",
+          foreignTableName: "regionchangedata", // 外部表的名称
+          queryFields: ["regionchangedata.projectnum as value"]
+        },
+        {
+          name: "企业数量",
+          queryFields: ["regionchangedata.entnum as value"]
+        },
+        {
+          name: "行业占比",
+          queryFields: [
+            "regionchangedata.swentnum as swentnum",
+            "regionchangedata.jrentnum as jrentnum",
+            "regionchangedata.plentnum as plentnum",
+            "regionchangedata.fdcentnum as fdcentnum",
+            "regionchangedata.kjentnum as kjentnum",
+            "regionchangedata.wtentnum as wtentnum",
+            "regionchangedata.otherentnum as otherentnum"
+          ]
+        },
+        {
+          name: "税收收入",
+          queryFields: ["regionchangedata.tax as value"]
+        },
+        {
+          name: "税收增幅",
+          queryFields: ["regionchangedata.taxtb as value"]
+        },
+        {
+          name: "区级收入",
+          queryFields: ["regionchangedata.qjsr as value"]
+        }
+      ]
+    },
+    {
+      name: "楼宇分析",
+      map_url:
+        "http://192.168.46.228:8090/iserver/services/map-CBDALL/rest/maps/%E6%A5%BC%E5%AE%87%E7%82%B9",
+      scene_url:
+        "http://192.168.46.228:8090/iserver/services/map-CBDALL/rest/maps/%E6%A5%BC%E5%AE%87%E9%9D%A2",
+      foreignTableName: "PPCHANGEDATA", // 外部表的名称
+      pro_name: "PROJECTNAME", // 外部表楼宇名称
+      park_name: "PARKNAME", // 外部表园区名称
+      other_pro_name: "楼宇名称", // 楼宇空间表名称
+      other_part_name: "楼宇名称", // 园区空间表名称
+      datasource: "CBDGIS", // 数据集
+      map_dataset: "LY_CBD", // 点数据
+      scene_dataset: "LY_C_CBD", // 面数据
+      children: [
+        {
+          name: "楼宇与园区分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "重点楼宇",
+              color: "#DC143C",
+              queryAttributeFilter: "PROJECTTYPE = 0" // 结果过滤条件
+            },
+            {
+              name: "一般楼宇",
+              color: "#19BE6B",
+              queryAttributeFilter: "PROJECTTYPE = 1" // 结果过滤条件
+            },
+            {
+              name: "重点园区",
+              color: "#0000FF",
+              queryAttributeFilter: "PARKTYPE = 0" // 结果过滤条件
+            },
+            {
+              name: "一般园区",
+              color: "#FFFF00",
+              queryAttributeFilter: "PARKTYPE = 1" // 结果过滤条件
+            }
+          ]
+        },
+        {
+          name: "纳税过亿楼宇与园区分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "纳税过亿楼宇",
+              color: "#DC143C",
+              queryAttributeFilter: "TAX > 10000 and PARKTYPE is null" // 结果过滤条件
+            },
+            {
+              name: "纳税过亿园区",
+              color: "#19BE6B",
+              queryAttributeFilter: "TAX > 10000 and PROJECTTYPE is null" // 结果过滤条件
+            }
+          ]
+        },
+        {
+          name: "楼宇与园区价值能力分析",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "楼宇地均产出大于7500万/万平方米",
+              color: "#DC143C",
+              queryAttributeFilter: "TAXPERAREA > 7500 and PARKTYPE is null" // 结果过滤条件
+            },
+            {
+              name: "楼宇地均产出小于7500万/万平方米",
+              color: "#19BE6B",
+              queryAttributeFilter: "TAXPERAREA < 7500 and PARKTYPE is null" // 结果过滤条件
+            },
+            {
+              name: "园区地均产出大于7500万/万平方米",
+              color: "#0000FF",
+              queryAttributeFilter: "TAXPERAREA > 7500 and PROJECTTYPE is null" // 结果过滤条件
+            },
+            {
+              name: "园区地均产出小于7500万/万平方米",
+              color: "#FFFF00",
+              queryAttributeFilter: "TAXPERAREA < 7500 and PROJECTTYPE is null" // 结果过滤条件
+            }
+          ]
+        },
+        {
+          name: "楼宇品质分级分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "超甲级楼宇分布",
+              color: "#DC143C",
+              queryAttributeFilter: "QUALITYRATING = '超甲级'" // 结果过滤条件
+            },
+            {
+              name: "甲级楼宇分布",
+              color: "#19BE6B",
+              queryAttributeFilter: "QUALITYRATING = '甲级'" // 结果过滤条件
+            }
+          ]
+        },
+        {
+          name: "CBD楼宇联盟分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "楼宇联盟会员单位分布",
+              color: "#DC143C",
+              queryAttributeFilter: "PARKTYPE is null and ISLEAGUE = 1" // 结果过滤条件
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name: "企业分析",
+      map_url:
+        "http://192.168.46.228:8090/iserver/services/map-CBDALL/rest/maps/%E4%BC%81%E4%B8%9A%E7%82%B9",
+      datasource: "CBDGIS",
+      map_dataset: "CBDJYQY",
+      foreignTableName: "entchangedata",
+      left_table_id: "ZZJGDM",
+      right_table_id: "NAT_ORG_CODE",
+      children: [
+        {
+          name: "区域企业总体分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "区域企业总体分布",
+              color: "#DC143C",
+              queryAttributeFilter: ""
+            }
+          ]
+        },
+        {
+          name: "重点企业分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "重点企业分布",
+              color: "#19BE6B",
+              queryAttributeFilter: "typeid = '01'" // 结果过滤条件
+            }
+          ]
+        },
+        {
+          name: "企业主体变化分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "新注册企业分布",
+              color: "#19BE6B",
+              queryAttributeFilter: "typeid = '02'" // 结果过滤条件
+            },
+            {
+              name: "新迁入企业分布",
+              color: "#19BE6B",
+              queryAttributeFilter: "typeid = '03'" // 结果过滤条件
+            },
+            {
+              name: "注吊销企业分布",
+              color: "#19BE6B",
+              queryAttributeFilter: "typeid = '05'" // 结果过滤条件
+            },
+            {
+              name: "迁出企业分布",
+              color: "#19BE6B",
+              queryAttributeFilter: "typeid = '04'" // 结果过滤条件
+            }
+          ]
+        },
+        {
+          name: "新注册过亿企业分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "新注册过亿企业分布",
+              color: "#19BE6B",
+              queryAttributeFilter: "typeid = '06'" // 结果过滤条件
+            }
+          ]
+        },
+        {
+          name: "特色企业分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "世界500强企业分布",
+              color: "#19BE6B",
+              queryAttributeFilter: "typeid = '09'" // 结果过滤条件
+            },
+            {
+              name: "上市公司分布",
+              color: "#19BE6B",
+              queryAttributeFilter: "typeid = '10'" // 结果过滤条件
+            },
+            {
+              name: "独角兽企业分布",
+              color: "#19BE6B",
+              queryAttributeFilter: "typeid = '11'" // 结果过滤条件
+            },
+            {
+              name: "总部企业分布",
+              color: "#19BE6B",
+              queryAttributeFilter: "typeid = '12'" // 结果过滤条件
+            },
+            {
+              name: "跨国公司地区总部企业分布",
+              color: "#19BE6B",
+              queryAttributeFilter: "typeid = '13'" // 结果过滤条件
+            },
+            {
+              name: "外资企业分布",
+              color: "#19BE6B",
+              queryAttributeFilter: "typeid = '14'" // 结果过滤条件
+            },
+            {
+              name: "功能性企业分布",
+              color: "#19BE6B",
+              queryAttributeFilter: "typeid = '017'" // 结果过滤条件
+            }
+          ]
+        },
+        {
+          name: "纳税过亿企业分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "纳税过亿企业分布",
+              color: "#19BE6B",
+              queryAttributeFilter: "typeid = '07'" // 结果过滤条件
+            }
+          ]
+        },
+        {
+          name: "异地纳税企业分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "异地纳税企业分布",
+              color: "#19BE6B",
+              queryAttributeFilter: "typeid = '08'" // 结果过滤条件
+            }
+          ]
+        },
+        {
+          name: "不同行业类型企业分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "商务和租赁服务业分布"
+            },
+            {
+              name: "金融业分布"
+            },
+            {
+              name: "批发和零售业分布"
+            },
+            {
+              name: "房地产业分布"
+            },
+            {
+              name: "科学研究和技术服务业分布"
+            },
+            {
+              name: "文化、体育和娱乐业分布"
+            },
+            {
+              name: "其他"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name: "信用分析",
+      children: [
+        {
+          name: "高风险企业分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "高风险企业分布"
+            }
+          ]
+        },
+        {
+          name: "经济异常企业分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "经济异常企业分布"
+            }
+          ]
+        },
+        {
+          name: "行政处罚企业分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "行政处罚企业分布"
+            }
+          ]
+        },
+        {
+          name: "黑名单企业分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "黑名单企业分布"
+            }
+          ]
+        },
+        {
+          name: "红名单企业分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "红名单企业分布"
+            }
+          ]
+        },
+        {
+          name: "重点监测企业",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "重点监测企业"
+            }
+          ]
+        },
+        {
+          name: "瞬时风险企业",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "瞬时风险企业"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name: "基础设施"
+    }
+  ],
+  /*区域网格*/
+  AreaGrids: [
+    {
+      id: "CBD核算范围",
+      label: "CBD核算范围",
+      urlTemplate:
+        "http://192.168.46.30:8090/iserver/services/map-CBD/wmts100/CBD核算范围/default/Custom_CBD核算范围/{z}/{y}/{x}.png",
+      checked: false,
+      tileSystem: [1, -1, 506673.157972172, 306764.1205188399]
+    },
+    {
+      id: "CBD中心区",
+      label: "CBD中心区",
+      urlTemplate:
+        "http://192.168.46.30:8090/iserver/services/map-CBD/wmts100/CBD中心区/default/Custom_CBD中心区/{z}/{y}/{x}.png",
+      checked: false,
+      tileSystem: [1, -1, 507972.4638676255, 306212.6552708135]
+    },
+    {
+      id: "CBD西区",
+      label: "CBD西区",
+      urlTemplate:
+        "http://192.168.46.30:8090/iserver/services/map-CBD/wmts100/CBD西区/default/Custom_CBD西区/{z}/{y}/{x}.png",
+      checked: false,
+      tileSystem: [1, -1, 507972.4638676255, 306212.6552708135]
+    },
+    {
+      id: "CBD东区",
+      label: "CBD东区",
+      urlTemplate:
+        "http://192.168.46.30:8090/iserver/services/map-CBD/wmts100/CBD东区/default/Custom_CBD东区/{z}/{y}/{x}.png",
+      checked: false,
+      tileSystem: [1, -1, 508937.19247180363, 306187.4943991537]
+    },
+    {
+      id: "CBD街乡",
+      label: "CBD街乡",
+      urlTemplate:
+        "http://192.168.46.30:8090/iserver/services/map-CBD/wmts100/功能区街乡/default/Custom_功能区街乡/{z}/{y}/{x}.png",
+      checked: false,
+      tileSystem: [1, -1, 505764.0597520127, 313551.30006224243]
+    },
+    {
+      id: "CBD社区",
+      label: "CBD社区",
+      urlTemplate:
+        "http://192.168.46.30:8090/iserver/services/map-CBD/wmts100/CBD社区/default/Custom_CBD社区/{z}/{y}/{x}.png",
+      checked: false,
+      tileSystem: [1, -1, 505760.9899301272, 313523.9609224792]
+    }
+  ]
+};
+
+// eslint-disable-next-line no-unused-vars
+const sceneConfig = {
+  // 区域网格-三维
+  zoningGridConfig: [
+    {
+      index: 0,
+      name: "CBD东区",
+      file_name: "DOMAIN_EAST_CBD.json",
+      color: "#FFA500"
+    },
+    {
+      index: 1,
+      name: "CBD西区",
+      file_name: "DOMAIN_WEST_CBD.json",
+      color: "#008000"
+    },
+    {
+      index: 2,
+      name: "CBD中心区",
+      file_name: "DOMAIN_CENTER_CBD.json",
+      color: "#1E90FF"
+    },
+    {
+      index: 3,
+      name: "CBD核心区",
+      file_name: "",
+      color: "#FF0000"
+    }
+  ]
+};

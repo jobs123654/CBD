@@ -1,0 +1,580 @@
+<template>
+  <section>
+    <div class="collection-root">
+      <div class="title">
+        <div class="title-my">我的收藏</div>
+        <Icon type="ios-close-circle-outline" title="关闭" @click="close"/>
+      </div>
+      <div class="tree">
+        <Tree :data="firstData" :load-data="loadData" :render="renderContent"></Tree>
+      </div>
+    </div>
+
+    <Modal v-model="removeModal" width="360">
+      <p slot="header" style="color:#f60;text-align:center">
+        <Icon type="ios-information-circle"></Icon>
+        <span>删除节点/地图</span>
+      </p>
+      <div style="text-align:center">
+        <p>确定删除{{removeName}}?</p>
+      </div>
+      <div slot="footer">
+        <Button size="large" @click="closeRemoveModal">取消</Button>
+        <Button type="error" size="large" :loading="modal_loading" @click="removeNode">删除</Button>
+      </div>
+    </Modal>
+    <Modal v-model="appendModal" width="360">
+      <p slot="header" style="color:#2d8cf0;text-align:center">
+        <Icon type="ios-document-outline"/>
+        <span>新增节点/收藏</span>
+      </p>
+      <div style="text-align:center">
+        <RadioGroup v-model="selectRadio">
+          <Radio label="节点">
+            <Icon type="ios-folder-outline"/>
+            <span>节点</span>
+          </Radio>
+          <Radio label="地图">
+            <Icon type="ios-map-outline"/>
+            <span>地图</span>
+          </Radio>
+        </RadioGroup>
+        <Card dis-hover v-if="selectRadio == '节点'">
+          <div>
+            节点名称：
+            <Input v-model="nodeValue" placeholder="输入新增节点名称" style="width: 180px" clearable/>
+            <p v-show="nodeTitle" style="color:red">请输入节点名称</p>
+          </div>
+          <div style="margin-top: 10px">
+            上级节点：
+            <Input v-model="selectNode" style="width: 180px" disabled/>
+          </div>
+        </Card>
+        <Card dis-hover v-else>
+          <div>
+            地图名称：
+            <Input v-model="mapValue" placeholder="输入新增收藏地图名称" style="width: 180px" clearable/>
+            <p v-show="mapTitle" style="color:red">请输入地图名称</p>
+          </div>
+          <div style="margin-top: 10px">
+            上级节点：
+            <Input v-model="selectNode" style="width: 180px" disabled/>
+          </div>
+        </Card>
+      </div>
+      <div slot="footer">
+        <Button size="large" @click="closeAppendModal">取消</Button>
+        <Button type="primary" size="large" :loading="modal_loading" @click="append">新增</Button>
+      </div>
+    </Modal>
+  </section>
+</template>
+
+<script>
+import axios from "axios";
+export default {
+  name: "MapCollection",
+  data() {
+    return {
+      firstData: [
+        {
+          title: "收藏夹",
+          loading: false,
+          nodeId: 0,
+          children: [],
+          type: "node",
+          render: (h, { root, node, data }) => {
+            return h(
+              "span",
+              {
+                style: {
+                  display: "inline-block",
+                  width: "100%"
+                }
+              },
+              [
+                h("span", [
+                  h("Icon", {
+                    props: {
+                      type: "ios-folder-outline"
+                    },
+                    style: {
+                      marginRight: "8px"
+                    }
+                  }),
+                  h("span", data.title)
+                ]),
+                h(
+                  "span",
+                  {
+                    style: {
+                      display: "inline-block",
+                      float: "right",
+                      marginRight: "2px"
+                    }
+                  },
+                  [
+                    h("Button", {
+                      props: {
+                        icon: "md-add",
+                        type: "info",
+                        size: "small"
+                      },
+                      style: {
+                        marginRight: "8px"
+                      },
+                      on: {
+                        click: () => {
+                          this.addendObj = {
+                            root: root,
+                            node: node,
+                            data: data
+                          };
+                          this.selectNode = node.node.title;
+                          this.addendNode(data);
+                        }
+                      }
+                    })
+                  ]
+                )
+              ]
+            );
+          }
+        }
+      ],
+      removeObj: null,
+      removeModal: false,
+      removeName: "",
+      modal_loading: false,
+      appendModal: false,
+      addendObj: null,
+      selectRadio: "节点",
+      nodeValue: "",
+      selectNode: "",
+      mapValue: "",
+      nodeTitle: false,
+      mapTitle: false,
+      dbUrl: "/MapCollection"
+    };
+  },
+  computed: {
+    mapViewObj() {
+      return this.$store.state.mapViewObj;
+    },
+    features() {
+      return this.$store.state.features;
+    },
+    currentList() {
+      return this.$store.state.currentList;
+    },
+    secondCurrentList() {
+      return this.$store.state.secondCurrentList;
+    },
+    maptype() {
+      return this.$store.state.mapType;
+    },
+    gridArray() {
+      return this.$store.state.gridArray;
+    },
+    migrateObjDM() {
+      return this.$store.state.migrateObjDM;
+    }
+  },
+  watch: {
+    appendModal(val, oldVal) {
+      if (!val) {
+        this.modal_loading = false;
+        this.nodeTitle = false;
+        this.mapTitle = false;
+        this.selectRadio = "节点";
+        this.nodeValue = "";
+        this.mapValue = "";
+      }
+    }
+  },
+  methods: {
+    close() {
+      this.$emit("openCollection");
+    },
+    loadData(item, callback) {
+      axios
+        .get(this.dbUrl, {
+          params: {
+            parentID: item.nodeId
+          }
+        })
+        .then(res => {
+          if (res.data.data && res.data.data.length) {
+            let data = [];
+            res.data.data.forEach(node => {
+              if (node.type == "node") {
+                let a = {
+                  title: node.name,
+                  name: node.name,
+                  loading: false,
+                  type: node.type,
+                  nodeId: node.id,
+                  children: []
+                };
+                data.push(a);
+              }
+            });
+            res.data.data.forEach(map => {
+              if (map.type == "map") {
+                let b = {
+                  title: map.name,
+                  name: map.name,
+                  nodeId: map.id,
+                  type: "map"
+                };
+                data.push(b);
+              }
+            });
+            callback(data);
+          } else {
+            this.$Message.info("此节点暂无地图数据/目录节点！");
+            callback([]);
+          }
+        });
+    },
+    renderContent(h, { root, node, data }) {
+      // 渲染目录节点
+      if (node.node.type == "node") {
+        return h(
+          "span",
+          {
+            style: {
+              display: "inline-block",
+              width: "100%"
+            }
+          },
+          [
+            h("span", [
+              h("Icon", {
+                props: {
+                  type: "ios-folder-outline"
+                },
+                style: {
+                  marginRight: "8px"
+                }
+              }),
+              h("span", data.title)
+            ]),
+            h(
+              "span",
+              {
+                style: {
+                  display: "inline-block",
+                  float: "right",
+                  marginRight: "2px"
+                }
+              },
+              [
+                h("Button", {
+                  props: {
+                    icon: "md-add",
+                    type: "info",
+                    size: "small"
+                  },
+                  style: {
+                    marginRight: "8px"
+                  },
+                  on: {
+                    click: () => {
+                      this.addendObj = {
+                        root: root,
+                        node: node,
+                        data: data
+                      };
+                      this.selectNode = node.node.title;
+                      this.addendNode(data);
+                    }
+                  }
+                }),
+                h("Button", {
+                  props: {
+                    icon: "md-trash",
+                    type: "error",
+                    size: "small"
+                  },
+                  style: {
+                    marginRight: "8px"
+                  },
+                  on: {
+                    click: () => {
+                      this.removeObj = {
+                        root: root,
+                        node: node,
+                        data: data
+                      };
+                      this.removeName = node.node.title;
+                      this.removeModal = true;
+                    }
+                  }
+                })
+              ]
+            )
+          ]
+        );
+      } else {
+        // 渲染地图节点
+        return h(
+          "span",
+          {
+            style: {
+              display: "inline-block",
+              width: "100%"
+            }
+          },
+          [
+            h("span", [
+              h("Icon", {
+                props: {
+                  type: "ios-map-outline"
+                },
+                style: {
+                  marginRight: "8px"
+                }
+              }),
+              h("span", data.title)
+            ]),
+            h(
+              "span",
+              {
+                style: {
+                  display: "inline-block",
+                  float: "right",
+                  marginRight: "2px"
+                }
+              },
+              [
+                h("Button", {
+                  props: {
+                    icon: "md-star",
+                    type: "primary",
+                    size: "small"
+                  },
+                  style: {
+                    marginRight: "8px"
+                  },
+                  on: {
+                    click: () => {
+                      this.reMap(root, node, data);
+                    }
+                  }
+                }),
+                h("Button", {
+                  props: {
+                    icon: "md-trash",
+                    type: "error",
+                    size: "small"
+                  },
+                  style: {
+                    marginRight: "8px"
+                  },
+                  on: {
+                    click: () => {
+                      this.removeObj = {
+                        root: root,
+                        node: node,
+                        data: data
+                      };
+                      this.removeName = node.node.title;
+                      this.removeModal = true;
+                    }
+                  }
+                })
+              ]
+            )
+          ]
+        );
+      }
+    },
+    remove(root, node, data) {
+      const parentKey = root.find(el => el === node).parent;
+      const parent = root.find(el => el.nodeKey === parentKey).node;
+      const index = parent.children.indexOf(data);
+      parent.children.splice(index, 1);
+    },
+    append() {
+      let self = this;
+      let data = self.addendObj.data;
+      let addData = {};
+      var mapObj = {};
+      const children = data.children || [];
+      if (self.selectRadio == "节点") {
+        if (self.nodeValue == "") {
+          self.nodeTitle = true;
+          return;
+        }
+        self.modal_loading = true;
+        addData = {
+          title: self.nodeValue,
+          name: self.nodeValue,
+          loading: false,
+          information: "",
+          type: "node",
+          parent: data.nodeId,
+          children: []
+        };
+      } else {
+        if (self.mapValue == "") {
+          self.mapTitle = true;
+          return;
+        }
+        self.modal_loading = true;
+        // 构建当前地图参数
+        mapObj = {
+          mapViewObj: self.mapViewObj,
+          features: self.features,
+          currentList: self.currentList,
+          secondCurrentList: self.secondCurrentList,
+          maptype: self.maptype,
+          gridArray: self.gridArray,
+          migrateObjDM: self.migrateObjDM
+        };
+        addData = {
+          title: self.mapValue,
+          name: self.mapValue,
+          parent: data.nodeId,
+          information: JSON.stringify(mapObj),
+          type: "map"
+        };
+      }
+      // 数据库新增
+      axios.post(self.dbUrl, addData).then(res => {
+        if (res.data.success) {
+          if (res.data.data.type == "node") {
+            data.children.push({
+              title: res.data.data.name,
+              name: res.data.data.name,
+              loading: false,
+              information: "",
+              type: res.data.data.type,
+              parent: data.nodeId,
+              children: [],
+              nodeId: res.data.data.id
+            });
+          } else {
+            data.children.push({
+              title: res.data.data.name,
+              name: res.data.data.name,
+              information: JSON.stringify(mapObj),
+              type: res.data.data.type,
+              parent: data.nodeId,
+              nodeId: res.data.data.id
+            });
+          }
+          self.$Message.success("新增成功！");
+          self.appendModal = false;
+        }
+      });
+    },
+    closeRemoveModal() {
+      this.removeModal = false;
+    },
+    closeAppendModal() {
+      this.appendModal = false;
+    },
+    addendNode(data) {
+      this.appendModal = true;
+    },
+    removeNode() {
+      let self = this;
+      self.remove(
+        self.removeObj.root,
+        self.removeObj.node,
+        self.removeObj.data
+      );
+      self.modal_loading = true;
+      axios.delete(self.dbUrl + "/" + self.removeObj.data.nodeId).then(res => {
+        if (res.data.success) {
+          self.$Message.success("删除成功！");
+          self.modal_loading = false;
+          self.removeModal = false;
+        }
+      });
+    },
+    reMap(root, node, data) {
+      let self = this;
+      axios.get(this.dbUrl + "/" + data.nodeId).then(res => {
+        let information = JSON.parse(res.data.data.information);
+        //恢复专题图
+        if (information.features.length) {
+          self.$store.commit("setFeatures", information.features);
+        }
+        self.$store.commit("setCurrentList", information.currentList);
+        self.$store.commit(
+          "setSecondCurrentList",
+          information.secondCurrentList
+        );
+        self.$store.commit("setMaptype", information.maptype);
+        if (information.gridArray.length) {
+          self.$store.commit("setGridArray", information.gridArray);
+        }
+        if (information.migrateObjDM.objs) {
+          self.$store.commit("setMigrateObjDM", information.migrateObjDM);
+        }
+        // 恢复地图
+        self.$emit("setMap", information.mapViewObj);
+      });
+    }
+  }
+};
+</script>
+
+<style lang='scss' scoped>
+.collection-root {
+  width: 280px;
+  height: 355px;
+  background: #2e4c68;
+  color: #fff;
+  border: 1px solid #028ccf;
+  .title {
+    height: 35px;
+    border-bottom: 1px solid #fff;
+    line-height: 35px;
+    .title-my {
+      padding: 0 10px;
+    }
+    .ivu-icon {
+      position: absolute;
+      top: 7.5px;
+      right: 10px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+  }
+  .tree {
+    height: calc(100% - 35px);
+    padding: 5px 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .tree::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  .tree::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    -webkit-box-shabow: inset 0 0 5px rgba(56, 134, 210, 0.2);
+    background: rgba(56, 134, 210, 0.8);
+  }
+  .tree::-webkit-scrollbar-track {
+    -webkit-box-shabow: inset 0 0 5px rgba(56, 134, 210, 0.2);
+    border-radius: 5px;
+    background: rgba(56, 134, 210, 0.4);
+  }
+}
+</style>
+<style>
+.ivu-tree-title {
+  color: #fff;
+}
+.ivu-tree-title:hover {
+  color: #000;
+}
+.ivu-card {
+  margin-top: 10px;
+}
+</style>

@@ -1,0 +1,75 @@
+<template>
+ <div :class="$style.root">
+     <p @click="">
+         <img src="../../assets/images/首页/查询.png" alt>
+         <span>查询</span>
+     </p>
+     <hr>
+     <p @click="">
+         <img src="../../assets/images/首页/测距.png" alt>
+         <span>测距</span>
+     </p>
+     <hr>
+     <p @click="">
+         <img src="../../assets/images/首页/面积.png" alt>
+         <span>测面</span>
+     </p>
+     <hr>
+     <p @click="">
+         <img src="../../assets/images/首页/点击.png" alt>
+         <span>点选</span>
+     </p>
+     <hr>
+     <p @click="">
+         <img src="../../assets/images/首页/删除.png" alt>
+         <span>清除</span>
+     </p>
+     <hr>
+     <p @click="">
+         <img src="../../assets/images/工具/量距.png" alt>
+         <span>全幅</span>
+     </p>
+     <hr>
+     <p @click="">
+         <img src="../../assets/images/首页/全屏.png" alt>
+         <span>全屏</span>
+     </p>
+ </div>
+</template>
+
+<script>
+    export default {
+        name: "HomeMapTool",
+        methods:function () {
+
+        }
+    }
+</script>
+
+<style lang="scss" module>
+
+    $font_color:#fff;
+ .root{
+     width: 30%;
+     display: flex;
+     background: url(../../assets/images/首页/工具背景.png) top/100% 100% ;
+     height: 4%;
+     padding-top: 0.6%;
+     p{
+         display: flex;
+         cursor: pointer;
+         margin-left: 3%;
+         line-height: 100%;
+          width: 10%;
+             span{
+             color: $font_color;
+         }
+         img{
+             width: 40%;
+             height: 50%;
+         }
+     }
+
+
+ }
+</style>

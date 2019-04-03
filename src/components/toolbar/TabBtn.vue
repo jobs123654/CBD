@@ -1,0 +1,75 @@
+<template>
+    <div :class="$style.root">
+          <p @click="tab(0)" :class="active==0?$style.heightFunction:$style.normalFunction">
+              <span>功能区</span>
+          </p>
+          <p @click="tab(1)" :class="active==1?$style.heightCenter:$style.normalCenter">
+              <span>中心区</span>
+          </p>
+    </div>
+</template>
+<script>
+    export default {
+        name: "TabBtn",
+        props:{
+            func:Object,
+            center:Object,
+        },
+        data:function () {
+            return{
+                active:0,
+            }
+        },
+        methods:{
+            tab:function (i) {
+             this.active=i;
+              if (i==0){
+                  this.$emit('func');
+                  // this.$emit('reset',0);
+              } else{
+                  this.$emit('center');
+                  // this.$emit('reset',1);
+              }
+            }
+        }
+    }
+</script>
+
+<style lang="scss" module>
+   .root{
+       display: flex;
+       position: relative;
+
+       p{
+
+           width: 100%;
+           padding: 4% 30%;
+           cursor: pointer;
+           color: white;
+           /*border: 0.2px solid red;*/
+           span{
+               /*border: 0.2px solid red;*/
+           }
+       }
+       p:nth-child(2){
+           position: absolute;
+           left: 69%;
+       }
+       .normalCenter{
+
+           background: url('../../assets/images/首页/中心区.png') top/100% 100%;
+       }
+       .normalFunction{
+
+           background: url('../../assets/images/首页/功能区.png') top/100% 100%;
+       }
+       .heightCenter{
+
+           background: url('../../assets/images/首页/中心区@.png') top/100% 100%;
+       }
+       .heightFunction{
+
+           background: url('../../assets/images/首页/功能区@.png') top/100% 100%;
+       }
+   }
+</style>

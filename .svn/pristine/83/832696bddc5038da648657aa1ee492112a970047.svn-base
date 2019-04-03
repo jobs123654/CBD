@@ -1,0 +1,26 @@
+<template>
+  <div :class="$style.root">
+    <img src="#" alt="">
+    <span>{{ title }}</span>
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    title: String
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  font-size: 0.2rem;
+  line-height: 0.55rem;
+  color: #e2dfb8;
+  font-weight: bold;
+  font-family: "Microsoft YaHei";
+  text-align: center;
+  background: linear-gradient(180deg, #2075b5 0, #295c87 100%);
+}
+</style>

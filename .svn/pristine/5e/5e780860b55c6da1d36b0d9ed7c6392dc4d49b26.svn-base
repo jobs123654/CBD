@@ -1,0 +1,51 @@
+<template>
+  <div></div>
+</template>
+
+<script>
+export default {
+  name: "GalleryQuery",
+  data() {
+    return {};
+  },
+  components: {},
+  computed: {},
+  mounted() {
+    this.init();
+  },
+  beforeDestroy() {
+    if (scenePickHandler) {
+      scenePickHandler.removeInputAction(
+        this.handleScene,
+        Cesium.ScreenSpaceEventType.LEFT_CLICK
+      );
+      scenePickHandler = scenePickHandler && scenePickHandler.destroy();
+      scenePickHandler = null;
+    }
+  },
+  methods: {
+    init() {
+      if (Viewer) {
+        window.scenePickHandler = new Cesium.ScreenSpaceEventHandler(
+          Viewer.scene.canvas
+        );
+        scenePickHandler.setInputAction(
+          this.handleScene,
+          Cesium.ScreenSpaceEventType.LEFT_CLICK
+        );
+      }
+    },
+    handleScene(e) {
+      let currentHeight = Viewer.scene.camera.position.z;
+      if (currentHeight < config.threeDimensional.gallery.height) {
+        let selectLayer = Viewer.scene.layers.getSelectedLayer();
+        let selectModelId = parseInt(selectLayer.getSelection()[0]);
+        
+      }
+    }
+  }
+};
+</script>
+
+<style lang='scss' scoped>
+</style>

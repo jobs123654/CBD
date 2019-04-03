@@ -1,0 +1,129 @@
+<template>
+  <div></div>
+</template>
+
+<script>
+export default {
+  name: "GalleryQuery",
+  data() {
+    return {
+      queryBuildInfo: {
+        title: "",
+        data: []
+      }
+    };
+  },
+  components: {},
+  computed: {},
+  mounted() {
+    this.init();
+  },
+  beforeDestroy() {
+    if (scenePickHandler) {
+      scenePickHandler.removeInputAction(
+        this.handleScene,
+        Cesium.ScreenSpaceEventType.LEFT_CLICK
+      );
+      scenePickHandler = scenePickHandler && scenePickHandler.destroy();
+      scenePickHandler = null;
+    }
+  },
+  methods: {
+    init() {
+      if (Viewer) {
+        window.scenePickHandler = new Cesium.ScreenSpaceEventHandler(
+          Viewer.scene.canvas
+        );
+        scenePickHandler.setInputAction(
+          this.handleScene,
+          Cesium.ScreenSpaceEventType.LEFT_CLICK
+        );
+      }
+    },
+    handleScene(e) {
+      let self = this;
+      // 楼座查询参数
+      let galleryParams = config.threeDimensional.gallery;
+      // 楼宇查询参数
+      let buildParams = config.threeDimensional.build;
+      let currentHeight = Viewer.scene.camera.position.z;
+      if (currentHeight < galleryParams.height) {
+        // 楼座查询
+        let selectLayer = Viewer.scene.layers.getSelectedLayer();
+        let selectModelId = parseInt(selectLayer.getSelection()[0]);
+
+        let joinItem = new SuperMap.JoinItem({
+          foreignTableName: galleryParams.foreignTableName,
+          joinFilter: galleryParams.joinFilter,
+          joinType: "LEFTJOIN"
+        });
+        let param = new SuperMap.QueryBySQLParameters({
+          queryParams: new SuperMap.FilterParameter({
+            name: galleryParams.queryParams.name,
+            joinItems: [joinItem],
+            fields: galleryParams.queryParams.fields,
+            // attributeFilter: "MODELID = " + selectModelId
+            attributeFilter: "MODELID = 3134"
+          }),
+          expectCount: 1
+        });
+
+        L.supermap.queryService(galleryParams.url).queryBySQL(param, result => {
+          if (result.type == "processCompleted" && result.result.totalCount) {
+            self.handleData(result, "楼座信息");
+          } else {
+            self.$Message.error("暂无楼座数据！");
+            self.$emit("queryLZdata", null);
+          }
+        });
+      } else {
+        // 楼宇查询
+        let position = Viewer.scene.pickPosition(e.position);
+        let point = L.point(position.y, position.z);
+
+        let joinItem = new SuperMap.JoinItem({
+          foreignTableName: buildParams.foreignTableName,
+          joinFilter: buildParams.joinFilter,
+          joinType: "LEFTJOIN"
+        });
+        let param = new SuperMap.QueryByGeometryParameters({
+          geometry: point,
+          queryParams: new SuperMap.FilterParameter({
+            name: buildParams.queryParams.name,
+            joinItems: [joinItem]
+          })
+        });
+        L.supermap
+          .queryService(buildParams.url)
+          .queryByGeometry(param, result => {
+            if (result.type == "processCompleted" && result.result.totalCount) {
+              console.log(result);
+            } else {
+              self.$Message.error("暂无楼宇数据！");
+            }
+          });
+      }
+    },
+    handleData(res, title) {
+      if (this.queryBuildInfo.title.length > 0) {
+        this.queryBuildInfo = {
+          title: "",
+          data: []
+        };
+      }
+      this.queryBuildInfo.title = title;
+      let features = res.result.recordsets[0].features.features;
+      let properties = features[0].properties;
+      let data = {
+        label: "空间信息",
+        props: properties
+      };
+      this.queryBuildInfo.data.push(data);
+      this.$emit("queryLZdata", this.queryBuildInfo);
+    }
+  }
+};
+</script>
+
+<style lang='scss' scoped>
+</style>

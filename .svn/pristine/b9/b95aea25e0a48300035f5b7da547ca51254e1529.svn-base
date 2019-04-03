@@ -1,0 +1,208 @@
+<template>
+  <div class="link-scene"></div>
+</template>
+
+<script>
+let sceneHandler;
+export default {
+  name: "LinkScene",
+  props: {
+    mapPoints: Object,
+    isLink: Boolean
+  },
+  watch: {
+    mapPoints: {
+      handler(val, oldVal) {
+        this.changeCamera(val);
+      },
+      deep: true
+    }
+  },
+  data() {
+    return {
+      sceneConfig: config.threeDimensional
+    };
+  },
+  mounted() {
+    this.init();
+  },
+  beforeDestroy() {
+    if (window.Viewer) {
+      try {
+        sceneHandler.destroy();
+        window.Viewer.destroy();
+      } catch (e) {
+        console.error("摧毁viewer失败！");
+      }
+      window.Viewer = null;
+      sceneHandler = null;
+    }
+  },
+  methods: {
+    init() {
+      let self = this;
+      let viewer = new Cesium.Viewer(this.$el, this.sceneConfig.option);
+      window.Viewer = viewer;
+      viewer._cesiumWidget._creditContainer.style.display = "none";
+      //添加SuperMap iServer发布的影像服务
+      viewer.imageryLayers.addImageryProvider(
+        new Cesium.SuperMapImageryProvider({
+          url: self.sceneConfig.map_url
+        })
+      );
+      let scene = viewer.scene;
+      let widget = viewer.cesiumWidget;
+
+      try {
+        let promise = scene.open(this.sceneConfig.sceneUrl);
+        Cesium.when.all(
+          promise,
+          layers => {
+            layers.forEach(layer => {
+              if (layer.name && layer.name.indexOf("JZ") == -1) {
+                layer.selectEnabled = false;
+              }
+            });
+
+            let point = new Cesium.Cartesian3(
+              self.sceneConfig.center.x,
+              self.sceneConfig.center.y,
+              self.sceneConfig.center.z
+            );
+            let pointCartographic = scene.camera._projection.unproject(point);
+            let pointCX = Cesium.Math.toDegrees(pointCartographic.longitude);
+            let pointCY = Cesium.Math.toDegrees(pointCartographic.latitude);
+            scene.camera.setView({
+              destination: Cesium.Cartesian3.fromDegrees(
+                pointCX,
+                pointCY,
+                pointCartographic.height
+              ),
+              orientation: {
+                heading: 0,
+                pitch: -Cesium.Math.PI_OVER_TWO,
+                roll: 0
+              }
+            });
+            // 添加场景监听
+            self.addSceneEvent();
+          },
+          e => {
+            let title = "加载SCP失败，请检查网络连接状态或者url地址是否正确？";
+            widget.showErrorPanel(title, undefined, e);
+          }
+        );
+      } catch (e) {
+        if (widget._showRenderLoopErrors) {
+          let title = "渲染时发生错误，已停止渲染。";
+          widget.showErrorPanel(title, undefined, e);
+        }
+      }
+    },
+    addSceneEvent() {
+      let self = this;
+      sceneHandler = new Cesium.ScreenSpaceEventHandler(Viewer.scene.canvas);
+
+      sceneHandler.setInputAction(function(movement) {
+        if (self.isLink) {
+          let camera = Viewer.scene.camera;
+          let cameraPosition = camera.position;
+          let longitude = cameraPosition.x;
+          let latitude = cameraPosition.y;
+          let size = cameraPosition.z / 2;
+          let bounds = {
+            xmin: longitude - size,
+            ymin: latitude - size,
+            xmax: longitude + size,
+            ymax: latitude + size
+          };
+          self.$emit("changeScene", bounds);
+        }
+      }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+      sceneHandler.setInputAction(function(movement) {
+        if (self.isLink) {
+          let camera = Viewer.scene.camera;
+          let cameraPosition = camera.position;
+          let longitude = cameraPosition.x;
+          let latitude = cameraPosition.y;
+          let size = cameraPosition.z / 2;
+          let bounds = {
+            xmin: longitude - size,
+            ymin: latitude - size,
+            xmax: longitude + size,
+            ymax: latitude + size
+          };
+          self.$emit("changeScene", bounds);
+        }
+      }, Cesium.ScreenSpaceEventType.WHEEL);
+    },
+    changeCamera(points) {
+      if (points.type.indexOf("viewchange") > -1) {
+        let view_point = this._planarLatitudeAndLongitude(
+          points.center[0],
+          points.center[1]
+        );
+        let view_pointMax = this._planarLatitudeAndLongitude(
+          points.bounds.xmax,
+          points.bounds.ymax
+        );
+        let view_pointMin = this._planarLatitudeAndLongitude(
+          points.bounds.xmin,
+          points.bounds.ymin
+        );
+        let z = this._calculateAltitude(view_pointMax.x, view_pointMin.x);
+        Viewer.scene.camera.setView({
+          destination: Cesium.Cartesian3.fromDegrees(
+            view_point.x,
+            view_point.y,
+            z
+          ),
+          orientation: {
+            heading: Cesium.Math.toRadians(points.heading),
+            pitch: Cesium.Math.toRadians(points.pitch - 90),
+            roll: 0
+          }
+        });
+      } else {
+        Viewer.scene.camera.position.x = points.center.x;
+        Viewer.scene.camera.position.y = points.center.y;
+      }
+    },
+    _planarLatitudeAndLongitude(x, y) {
+      let point = new Cesium.Cartesian3(x, y, 300);
+      let pointCartographic = Viewer.scene.camera._projection.unproject(point);
+      let pointCX = Cesium.Math.toDegrees(pointCartographic.longitude);
+      let pointCY = Cesium.Math.toDegrees(pointCartographic.latitude);
+      let newPoint = {
+        x: pointCX,
+        y: pointCY
+      };
+      return newPoint;
+    },
+    _calculateAltitude(right, left) {
+      let _PI = 3.1415926;
+      let _earthRadius = 6378137;
+      let altitude = _earthRadius;
+      let boundsWidth = right - left;
+      if (boundsWidth >= 120) {
+        altitude = (_earthRadius * boundsWidth) / 60 - _earthRadius;
+      } else if (boundsWidth != 0) {
+        let angle1 = (boundsWidth / 360) * _PI;
+        let height = Math.sin(angle1) * _earthRadius;
+        let a = height / Math.tan(angle1);
+        let b = height / Math.tan(_PI / 6);
+        altitude = a + b - _earthRadius;
+      }
+      return altitude;
+    }
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+.link-scene {
+  width: 100%;
+  height: 100%;
+}
+</style>

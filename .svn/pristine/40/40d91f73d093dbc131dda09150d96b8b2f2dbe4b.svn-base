@@ -1,0 +1,23 @@
+<template>
+  <div id="info-box"></div>
+</template>
+
+<script>
+export default {
+  name: "InfoBox",
+  data() {
+    return {};
+  },
+  components: {},
+  computed: {},
+  mounted() {},
+  beforeDestroy() {},
+  methods: {}
+};
+</script>
+
+<style lang='scss' scoped>
+#info-box {
+  
+}
+</style>

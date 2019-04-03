@@ -1,0 +1,33 @@
+<template>
+  <ul :class="$style.root">
+    <li @click="setMaptype('point')">点图</li>
+    <li @click="setMaptype('heatmap')">热力图</li>
+    <li @click="setMaptype('grid')">格网图</li>
+    <li @click="setMaptype('honeycomb')">蜂巢图</li>
+  </ul>
+</template>
+
+<script>
+export default {
+  methods: {
+    setMaptype(val) {
+      // this.$emit("setMaptype", val);
+      this.$store.commit("setMaptype", val);
+    }
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  background: url(../../assets/images/区域网格面板.png) center/100% 100%;
+  border: 1px solid #3a8acc;
+  list-style: none;
+  padding: 0.1rem;
+  color: #f5feff;
+  line-height: 0.3rem;
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+}
+</style>

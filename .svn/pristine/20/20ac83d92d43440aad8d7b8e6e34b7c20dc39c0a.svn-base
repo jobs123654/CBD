@@ -1,0 +1,69 @@
+<template>
+    <!--底图切换-->
+    <div class="root">
+         <button @click="LoadBaseLayer">二维地图</button>
+         <button @click="LoadImgLayer">影像地图</button>
+         <button @click="LoadTdLayer">三维地图</button>
+         <button @click="tt">二三维</button>
+    </div>
+</template>
+
+<script>
+
+
+    export default {
+        name: "TabMap",
+        props:{
+          medium:Object
+        },
+        data:function () {
+            return{
+
+            }
+        },
+        methods:{
+            /*切换为二维地图*/
+            LoadBaseLayer:function () {
+                this.$parent.visible=true
+                this.$parent.visible1=false;
+                this.$parent.visible2=false;
+                this.medium.$emit('tabMap',{
+                     key:0
+                 });
+            },
+            /*切换为影像地图*/
+            LoadImgLayer:function () {
+                this.$parent.visible=true;
+                this.$parent.visible1=false;
+                this.$parent.visible2=false;
+                this.medium.$emit('tabMap',{
+                    key:1
+                });
+            },
+            /*切换为三维地图*/
+            LoadTdLayer:function () {
+               /* this.medium.$emit('tabMap',{
+                    key:2
+                });*/
+                this.$parent.visible1=true;
+                this.$parent.visible=false;
+                this.$parent.visible2=false;
+            },
+            /*二三维地图联动*/
+            tt:function () {
+                this.$parent.visible2=true;
+                this.$parent.visible1=false;
+                this.$parent.visible=false;
+            },
+        }
+    }
+</script>
+
+<style  lang="scss" scoped>
+   .root{
+       position: absolute;
+       right: 7%;
+       bottom: 10%;
+       z-index: 9;
+   }
+</style>

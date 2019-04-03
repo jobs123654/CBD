@@ -1,0 +1,170 @@
+<template>
+  <transition name="slide-fade-bottom">
+    <div id="base-map-tab" @mouseover="mapiconMouseOver" @mouseout="mapiconMouseOut">
+      <ul>
+        <li
+          v-for="(item, i) in mapList"
+          v-show="mapList.length"
+          :key="i"
+          :title="item.name"
+          :index="i"
+          @click="changeBaseMap(item)"
+        >
+          <img src="../../assets/images/矢量.png" :alt="item.name" v-if="item.class == 'vectormap'">
+          <img
+            src="../../assets/images/影像.png"
+            :alt="item.name"
+            v-else-if="item.class == 'imagemap'"
+          >
+          <img
+            src="../../assets/images/三维.png"
+            :alt="item.name"
+            v-else-if="item.class == 'scenemap'"
+          >
+          <img
+            src="../../assets/images/白膜.png"
+            :alt="item.name"
+            v-else-if="item.class == 'whitemold'"
+          >
+          <img
+            src="../../assets/images/水晶膜.png"
+            :alt="item.name"
+            v-else-if="item.class == 'crystalmold'"
+          >
+          <img src="../../assets/images/二三维联动.png" :alt="item.name" v-else>
+        </li>
+      </ul>
+    </div>
+  </transition>
+</template>
+
+<script>
+export default {
+  name: "",
+  data() {
+    return {
+      mapList: [
+        {
+          tab: 3,
+          name: "二三维联动",
+          class: "linkmap"
+        },
+        {
+          tab: 2,
+          name: "CBD三维水晶",
+          class: "crystalmold"
+        },
+        {
+          tab: 2,
+          name: "CBD三维白膜",
+          class: "whitemold"
+        },
+        {
+          tab: 2,
+          name: "CBD三维",
+          class: "scenemap"
+        },
+        {
+          tab: 1,
+          name: "影像图",
+          class: "imagemap"
+        },
+        {
+          tab: 0,
+          name: "矢量图",
+          class: "vectormap"
+        }
+      ]
+    };
+  },
+  methods: {
+    changeBaseMap(item) {
+      switch (item.tab) {
+        case 0:
+          this.$emit("tabMap", item.tab);
+          this.changeIndex(item);
+          break;
+        case 1:
+          this.$emit("tabMap", item.tab);
+          this.changeIndex(item);
+          break;
+        case 2:
+          this.$emit("tabMap", item.tab);
+          this.changeIndex(item);
+          this.sceneUrl(item);
+          break;
+        case 3:
+          this.$emit("tabMap", item.tab);
+          this.changeIndex(item);
+          break;
+      }
+    },
+    mapiconMouseOver() {
+      let iconlist = this.$el.children[0].children;
+      for (let i = 0; i < iconlist.length; i++) {
+        let iconhtml = iconlist[i];
+        let topPX =
+          (iconlist.length - iconhtml.getAttribute("index") - 1) * 66 + "px";
+        iconhtml.style.right = topPX;
+      }
+    },
+    mapiconMouseOut() {
+      let iconlist = this.$el.children[0].children;
+      for (let i = 0; i < iconlist.length; i++) {
+        let iconhtml = iconlist[i];
+        iconhtml.style.right = 0;
+      }
+    },
+    changeIndex(item) {
+      let self = this;
+      self.mapList.forEach((data, i) => {
+        if (data.name == item.name) {
+          self.mapList.push(data);
+          self.mapList.splice(i, 1);
+        }
+      });
+    },
+    sceneUrl(item) {
+      if (item.name.indexOf("水晶") > -1) {
+        config.threeDimensional.url = config.threeDimensional.emeraldUrl;
+      } else if (item.name.indexOf("白膜") > -1) {
+        config.threeDimensional.url = config.threeDimensional.albugineaUrl;
+      } else {
+        config.threeDimensional.url = config.threeDimensional.sceneUrl;
+      }
+    }
+  }
+};
+</script>
+
+<style lang='scss' scoped>
+#base-map-tab {
+  position: absolute;
+  right: 0.1rem;
+  bottom: 0.1rem;
+  z-index: 9;
+  width: 62px;
+  height: 62px;
+  transition: 0.5s;
+  li {
+    position: absolute;
+    list-style: none;
+    cursor: pointer;
+    margin-left: 5px;
+    transition: 1s;
+  }
+}
+</style>
+<style lang="scss">
+.slide-fade-bottom-enter-active {
+  transition: all 0.3s ease;
+}
+.slide-fade-bottom-leave-active {
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+.slide-fade-bottom-enter, .slide-fade-bottom-leave-to
+/* .slide-fade-leave-active for below version 2.1.8 */ {
+  transform: translateY(100px);
+  opacity: 0;
+}
+</style>

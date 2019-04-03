@@ -1,0 +1,60 @@
+<template>
+    <div :class="$style.root">
+          <p @click="tab(0)" :class="active==0?$style.heightFunction:$style.normalFunction">
+              <span>功能区</span>
+          </p>
+          <p @click="tab(1)" :class="active==1?$style.heightCenter:$style.normalCenter">
+              <span>中心区</span>
+          </p>
+    </div>
+</template>
+<script>
+    export default {
+        name: "TabBtn",
+        props:{
+
+        },
+        data:function () {
+            return{
+                active:0,
+            }
+        },
+        methods:{
+            tab:function (i) {
+             this.active=i;
+            }
+        }
+    }
+</script>
+
+<style lang="scss" module>
+   .root{
+       display: flex;
+
+
+       p{
+
+           width: 400px;
+           padding: 4% 12%;
+           cursor: pointer;
+           color: white;
+           
+       }
+       .normalCenter{
+
+           background: url('../../assets/images/首页/中心区.png') top/100% 100%;
+       }
+       .normalFunction{
+
+           background: url('../../assets/images/首页/功能区.png') top/100% 100%;
+       }
+       .heightCenter{
+
+           background: url('../../assets/images/首页/中心区@.png') top/100% 100%;
+       }
+       .heightFunction{
+
+           background: url('../../assets/images/首页/功能区@.png') top/100% 100%;
+       }
+   }
+</style>

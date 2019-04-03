@@ -1,0 +1,52 @@
+<template>
+  <ul :class="$style.root" v-show="visible">
+    <li :class="$style.item" @click="measureDistance">
+      <img src="../../assets/images/工具/量距.png" alt>
+    </li>
+    <li :class="$style.item" @click="measureArea">
+      <img src="../../assets/images/工具/量面.png" alt>
+    </li>
+    <li :class="$style.item" @click="clear">
+      <img src="../../assets/images/工具/删除.png" alt>
+    </li>
+  </ul>
+</template>
+
+<script>
+export default {
+  name: "MapTool",
+  data: function() {
+    return {
+      visible: true,
+      map: this.$parent.$refs.map
+    };
+  },
+  methods: {
+    measureDistance: function() {
+      this.map.measureDistance();
+    },
+    measureArea: function() {
+      this.map.measureArea();
+    },
+    clear: function() {
+      this.map.clear();
+    }
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  padding: 0.05rem;
+  background: url(../../assets/images/工具面板.png) center/100% 100%;
+  color: #ffffff;
+  border: 1px solid #3260bd;
+  font-size: 12px;
+  text-align: center;
+
+  .item {
+    list-style: none;
+    cursor: pointer;
+  }
+}
+</style>

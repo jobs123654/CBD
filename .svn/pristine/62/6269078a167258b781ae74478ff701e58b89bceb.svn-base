@@ -1,0 +1,38 @@
+<template>
+  <div class="link-map"></div>
+</template>
+
+<script>
+export default {
+  name: "LinkMap",
+  data() {
+    return {
+      mapConfig: config.map,
+      mapBaseLayerConfig: config.baseLayer
+    };
+  },
+  components: {},
+  computed: {},
+  mounted() {
+    this.init();
+  },
+  beforeDestroy() {},
+  methods: {
+    init() {
+      let self = this;
+      let mapBaseLayer = new maptalks.TileLayer(
+        "linkbase",
+        self.mapBaseLayerConfig
+      );
+      let map = new maptalks.Map(this.$el, {
+        center: self.mapConfig.center,
+        zoom: self.mapConfig.zoom,
+        baseLayer: mapBaseLayer
+      });
+    }
+  }
+};
+</script>
+
+<style lang='scss' scoped>
+</style>

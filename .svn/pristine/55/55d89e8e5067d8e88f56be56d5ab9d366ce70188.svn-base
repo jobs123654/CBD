@@ -1,0 +1,175 @@
+<template>
+  <div :class="$style.root"></div>
+</template>
+
+<script>
+export default {
+  name: "test",
+  data:function(){
+    return{
+      myChart:null,
+
+      option : {
+        title: {
+          text: 'CBD功能区历年收入占比(%)',
+          textStyle: {
+            color: "#fffdff",
+            fontSize: 18,
+            fontFamily: "Microsoft YaHei",
+            fontWeight: "lighter"
+          },
+          top: 20,
+          left: 20
+        },
+        series: [
+          {
+            type: "liquidFill",
+            //data: [0.6, 0.5, 0.4, 0.3],
+            data: [0.21, 0.5, 0.4, 0.3],
+            radius: "50%",
+            // 水球颜色
+            color: ["#49d088", "#38b470", "#2aaf66"],
+            center: ["18%", "65%"],
+            // outline  外边
+            outline: {
+              // show: false
+              borderDistance: 5,
+              itemStyle: {
+                borderWidth: 5,
+                borderColor: "#13FDCE"
+              }
+            },
+            label: {
+              normal: {
+                // textStyle: {
+                color: "red",
+                insideColor: "yellow",
+                fontSize: 100
+                // }
+              }
+            },
+            // 内图 背景色 边
+            backgroundStyle: {
+              color: "rgba(4,24,74,0.8)"
+              // borderWidth: 5,
+              // borderColor: 'red',
+            }
+          },
+          {
+            type: "liquidFill",
+            //data: [0.6, 0.5, 0.4, 0.3],
+            data: [0.45, 0.2, 0.1, 0.05],
+            radius: "40%",
+            // 水球颜色
+            color: ["#FE5555", "#F07581", "#FB5E61"],
+            center: ["50%", "65%"],
+            // outline  外边
+            outline: {
+              // show: false
+              borderDistance: 5,
+              itemStyle: {
+                borderWidth: 5,
+                borderColor: "#FE5555"
+              }
+            },
+            label: {
+              normal: {
+                textStyle: {
+                  color: "red",
+                  insideColor: "yellow",
+                  fontSize: 100
+                }
+              }
+            },
+            // 内图 背景色 边
+            backgroundStyle: {
+              color: "rgba(4,24,74,0.8)"
+              // borderWidth: 5,
+              // borderColor: 'red',
+            }
+          },
+          {
+            type: "liquidFill",
+            //data: [0.6, 0.5, 0.4, 0.3],
+            data: [0.32, 0.05, 0.25],
+            radius: "40%",
+            // 水球颜色
+            color: ["#FFBF11", "#F4B30E", "#EACE36"],
+            center: ["83%", "65%"],
+            // outline  外边
+            outline: {
+              // show: false
+              borderDistance: 5,
+              itemStyle: {
+                borderWidth: 5,
+                borderColor: "#FFBF11"
+              }
+            },
+            waveAnimation: true, // 禁止左右波动
+            label: {
+              normal: {
+                textStyle: {
+                  color: "red",
+                  insideColor: "yellow",
+                  fontSize: 100
+                }
+              }
+            },
+            // 内图 背景色 边
+            backgroundStyle: {
+              color: "rgba(4,24,74,0.8)"
+            }
+          }
+        ]
+      },
+      title:'CBD功能区GDP占比(%)',
+      GDP:54328,
+      one:0.46,
+      two:0.54,
+      three:0.21,
+    }
+  },
+  mounted() {
+
+    this.myChart = echarts.init(this.$el);
+    //使用制定的配置项和数据显示图表
+    this.myChart.setOption(this.option);
+
+  },
+  methods:{
+    init:function(title,data){
+      this.option.title.text=title;
+      for(let i =0;i<data.length;i++){
+        this.option.series[i].data[0]=data[i];
+      }
+      this.myChart.setOption(this.option)
+    },
+    active:function (i) {
+
+      this.option.series[i].radius='50%';
+      if (i==0){
+        while(++i<2){
+          this.option.series[i].radius='40%';
+        }
+      }
+      else if (i==2){
+        while(--i>0){
+          this.option.series[i].radius='40%';
+        }
+      }else {
+        this.option.series[0].radius='40%';
+        this.option.series[2].radius='40%';
+      }
+
+      this.myChart.setOption(this.option);
+    }
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  width: 100%;
+  height: 100%;
+}
+</style>

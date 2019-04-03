@@ -1,0 +1,89 @@
+<!--  -->
+<template>
+  <div id="cesium-scene"></div>
+</template>
+
+<script>
+export default {
+  name: "CesiumScene",
+  data() {
+    return {
+      config: config.threeDimensional
+    };
+  },
+  mounted() {
+    this.init();
+  },
+  beforeDestroy() {
+    if (window.Viewer) {
+      window.Viewer = null;
+    }
+  },
+  methods: {
+    init() {
+      let self = this;
+      // this.config.option.terrainProvider = new Cesium.CesiumTerrainProvider({
+      //   url: self.config.dem,
+      //   isSct: true //地形服务源自SuperMap iServer发布时需设置isSct为true
+      // });
+      let viewer = new Cesium.Viewer(this.$el, this.config.option);
+      window.Viewer = viewer;
+      viewer._cesiumWidget._creditContainer.style.display = "none";
+      //添加SuperMap iServer发布的影像服务
+      viewer.imageryLayers.addImageryProvider(
+        new Cesium.SuperMapImageryProvider({
+          url: self.config.map_url
+        })
+      );
+      let scene = viewer.scene;
+      let widget = viewer.cesiumWidget;
+
+      let promise = scene.open(this.config.url);
+      Cesium.when.all(
+        promise,
+        layers => {
+          let style = new Cesium.Style3D();
+          style.bottomAltitude = -39;
+          layers.forEach(layer => {
+            layer.style3D = style;
+            layer.refresh();
+          });
+
+          let point = new Cesium.Cartesian3(
+            self.config.center.x,
+            self.config.center.y,
+            self.config.center.z
+          );
+          let pointCartographic = scene.camera._projection.unproject(point);
+          let pointCX = Cesium.Math.toDegrees(pointCartographic.longitude);
+          let pointCY = Cesium.Math.toDegrees(pointCartographic.latitude);
+
+          // 设置相机位置，定位至模型
+          scene.camera.setView({
+            destination: Cesium.Cartesian3.fromDegrees(
+              pointCX,
+              pointCY,
+              pointCartographic.height
+            ),
+            orientation: {
+              heading: 0,
+              pitch: -Cesium.Math.PI_OVER_TWO,
+              roll: 0
+            }
+          });
+        },
+        e => {
+          let title = "加载SCP失败，请检查网络连接状态或者url地址是否正确？";
+          widget.showErrorPanel(title, undefined, e);
+        }
+      );
+    }
+  }
+};
+</script>
+<style lang='scss' scoped>
+#cesium-scene {
+  width: 100%;
+  height: 100%;
+}
+</style>

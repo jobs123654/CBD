@@ -1,0 +1,107 @@
+import axios from "axios";
+const mockURL='/mock';
+const path='http://192.168.46.220:8080/cboard/dashboard/getAggregateData.do?'
+export const getData = async param => {
+  let data = await axios(`${mockURL}/`);
+};
+
+export const getJX = async param => {
+  let data = await axios(`/geojson/DOMAIN_XJ_CBD.json`);
+  return data.data.features;
+};
+
+export const getLY = async param => {
+  let data = await axios(`/geojson/LY_CBD.json`);
+  return data.data.features;
+};
+
+export const getXY = async param => {
+  let data = await axios(`/geojson/cbd经营地址.json`);
+  return data.data.features;
+};
+
+export const getQY = async param => {
+  let data = await axios(`/geojson/cbd经营地址.json`);
+  return data.data.features;
+};
+
+
+
+
+/*大屏图表数据*/
+
+/*返回GDP占比
+* 根据param更新对应的图表
+* 0 功能区
+* 1 中心区
+* */
+export const getGDPZB=async param=>{
+
+  let data ='';
+  if (param){
+    data= await axios(`${path}datasetId=325&cfg={%20%22rows%22:%20[{%20%22columnName%22:%20%22YEAR%22,%20%22filterType%22:%20%22eq%22,%20%22values%22:%20[],%20%22id%22:%20%223154eec3-1e07-42dc-bdc1-f666eac2524e%22%20}],%20%22columns%22:%20[],%20%22filters%22:%20[],%20%22values%22:%20[{%20%22column%22:%20%22GDPZB%22,%20%22aggType%22:%20%22sum%22%20}]%20}`);
+  } else{
+    data= await axios(`${path}datasetId=325&cfg={%20%22rows%22:%20[{%20%22columnName%22:%20%22YEAR%22,%20%22filterType%22:%20%22eq%22,%20%22values%22:%20[],%20%22id%22:%20%223154eec3-1e07-42dc-bdc1-f666eac2524e%22%20}],%20%22columns%22:%20[],%20%22filters%22:%20[],%20%22values%22:%20[{%20%22column%22:%20%22GDPZB%22,%20%22aggType%22:%20%22sum%22%20}]%20}`);
+  }
+  return data
+}
+
+/*
+*待定
+* */
+
+/*
+*返回历年GDP收入
+* */
+export const getGDPIncome=async param=>{
+  let data ='';
+  if (param){
+    data= await axios(`${path}`);
+  } else{
+    data= await axios(`${path}datasetId=329&cfg={%20"rows":%20[],%20"columns":%20[{%20"columnName":%20"YEAR",%20"filterType":%20"eq",%20"values":%20[],%20"id":%20"954740c0-43c9-4a64-937b-940165e22ed0"%20}],%20"filters":%20[],%20"values":%20[{%20"column":%20"GDP",%20"aggType":%20"sum"%20}]%20}`);
+  }
+  return data
+}
+
+/*
+* 历年税收收入
+* */
+export const getTaxIncome=async param=>{
+
+  let data ='';
+  if (param){
+    data= await axios(`${path}`);
+  } else{
+    data= await axios(`${path}datasetId=332&cfg={"rows":[],"columns":[{"columnName":"YEAR","filterType":"eq","values":[],"id":"dc33cf4f-94d5-4a55-9291-15e733708b8a"}],"filters":[],"values":[{"column":"TAX","aggType":"sum"}]}`);
+  }
+  return data
+}
+/*
+* 历年资产规模
+*
+* */
+export const getAssetSize=async param=>{
+
+  let data ='';
+  if (param){
+    data= await axios(`${path}`);
+  } else{
+    data= await axios(`${path}datasetId=333&cfg={"rows":[],"columns":[{"columnName":"YEAR","filterType":"eq","values":[],"id":"1f35f99b-4718-4df1-8029-a34b912749b7"}],"filters":[],"values":[{"column":"ASSETSIZE","aggType":"sum"}]}`);
+  }
+  return data
+}
+
+/*
+* 功能区：入驻企业数量
+* 中心区：不同行业税收占比
+* */
+export const getBuildingNumsAndTax=async param=>{
+
+  let data ='';
+  if (param){
+    data= await axios(`${path}`);
+  } else{
+    data= await axios(`${path}datasetId=334&cfg={"rows":[],"columns":[{"columnName":"YEAR","filterType":"eq","values":[],"id":"92a045e1-0166-4ff8-bbdd-3b41e276e45d"}],"filters":[],"values":[{"column":"ENTNUM","aggType":"sum"}]}`);
+  }
+  return data
+}

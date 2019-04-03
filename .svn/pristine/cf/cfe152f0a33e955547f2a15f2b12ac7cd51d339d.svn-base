@@ -1,0 +1,447 @@
+<template>
+  <div id="app">
+    <!-- 地图 -->
+    <div :class="$style.container">
+      <Map
+        :class="$style.map"
+        :option="map"
+        v-if="showMap"
+        ref="map"
+        :baseLayer="baseLayer"
+        :boundary="boundary"
+        :mapOptions="mapOptions"
+      />
+      <!-- 场景 -->
+      <Scene v-if="showRealScene"/>
+      <Link v-if="showLink"/>
+    </div>
+
+    <!-- 标题 -->
+    <Title :class="$style.title" :title="title" @togglePanel="togglePanel"/>
+    <!-- 工具条 -->
+    <ToolBar
+      :class="$style.toolbar"
+      :boundary="boundary"
+      @toolbar="toolbar"
+      @toggleToolBar="toggleToolBar"
+      @openUser="openUser"
+      v-show="showToolbar && !showRealScene"
+    />
+    <StreetMenu
+      :class="$style.streetmenu"
+      :streets="streets"
+      @setMask="changeBoundary"
+      v-show="showStreetMenu && showToolbar"
+    />
+    <Maptype :class="$style.mapetype" v-show="showMaptype && showToolbar"/>
+    <!-- 资源目录 -->
+    <ResourceMenu
+      :class="$style.resourceList"
+      :menu="resourceList"
+      @setCurrentList="setCurrentList"
+      @showGridMenu="showGridMenu"
+      v-show="showResourcemenu && !showRealScene"
+    />
+    <SecondMenu
+      :class="$style.secondList"
+      :list="currentItem"
+      :boundary="boundary"
+      v-if="!showRealScene"
+    />
+    <!--区域网格-->
+    <GridMenu :list="areagrids" v-show="showAreagrid "></GridMenu>
+    <!--底图切换-->
+    <BaseMapTab @tabMap="tabMap" v-show="showTabmap"></BaseMapTab>
+    <!--地图工具-->
+    <MapTool :class="$style.maptool" v-show="showMaptool && showToolbar" @openSearch="openSearch"></MapTool>
+    <!--CBD统计分析-->
+    <CBDAnalysis :items="analysisData" ref="CBDAnalysis"></CBDAnalysis>
+    <!-- 高级查询 -->
+    <MapSearch :class="$style.mapsearch" v-if="search"></MapSearch>
+
+    <!--用户组件-->
+    <User
+      :class="$style.userAss"
+      v-show="showUser"
+      @openUserInfo="openUserInfo"
+      @openCollection="openCollection"
+      @openUser="openUser"
+    ></User>
+    <!-- 用户信息 -->
+    <UserInfo :class="$style.userinfo" v-if="showUserInfo" @openUserInfo="openUserInfo"></UserInfo>
+    <!-- 地图收藏 -->
+    <MapCollection
+      :class="$style.collection"
+      v-if="showMapCollection"
+      @openCollection="openCollection"
+      @setMap="setMap"
+    ></MapCollection>
+
+    <InfoBoxForLink class="info-box" :infoData="galleryData" v-if="galleryData.data"></InfoBoxForLink>
+
+    <div :class="$style.toggleToolBar" @click="toggleToolBar" v-show="showLeft">
+      <img src="../../assets/images/恢复.png" alt>
+    </div>
+    <div :class="$style.toggleResourceList" @click="toggleResourceList" v-show="showRight">
+      <img src="../../assets/images/恢复.png" alt>
+    </div>
+  </div>
+</template>
+
+<script>
+import Map from "../map/Map";
+import Title from "../Title";
+import ToolBar from "../toolbar/ToolBar";
+import StreetMenu from "../toolbar/StreetMenu";
+import ResourceMenu from "../resourceMenu/ResourceMenu";
+import SecondMenu from "../resourceMenu/SecondMenu";
+import DOMAIN_XJ_CBD from "../../../public/geojson/DOMAIN_XJ_CBD";
+import DOMAIN_GNQ_CBD from "../../../public/geojson/DOMAIN_GNQ_CBD";
+import BOU_QU_CY from "../../../public/geojson/BOU_QU_CY";
+import BaseMapTab from "./../map/BaseMapTab";
+import GridMenu from "../toolbar/GridMenu";
+import Maptype from "../toolbar/Maptype";
+import MapTool from "../toolbar/MapTool";
+import Scene from "../realscene/Scene";
+import CBDAnalysis from "../analysis/CBDAnalysis";
+import InfoBoxForLink from "../common/InfoBoxForLink";
+import Link from "./../link/Link";
+import User from "./../user/User";
+import UserInfo from "./../user/info/UserInfo";
+import MapCollection from "./../user/collection/MapCollection";
+import MapSearch from "./../toolbar/MapSearch";
+
+export default {
+  name: "Index",
+  components: {
+    Map,
+    Title,
+    ToolBar,
+    ResourceMenu,
+    BaseMapTab,
+    GridMenu,
+    SecondMenu,
+    StreetMenu,
+    Maptype,
+    MapTool,
+    Scene,
+    CBDAnalysis,
+    InfoBoxForLink,
+    Link,
+    User,
+    UserInfo,
+    MapCollection,
+    MapSearch
+  },
+  data() {
+    return {
+      map: config.map,
+      baseLayer: config.baseLayer,
+      boundary: BOU_QU_CY.features[0], //DOMAIN_GNQ_CBD.features[0]
+      streets: DOMAIN_XJ_CBD.features, //DOMAIN_XJ_CBD.features
+      showMap: true, //控制二维地图的显示和隐藏
+      threeDimensional: config.threeDimensional,
+      title: config.title,
+      resourceList: config.resourceList,
+      areagrids: config.AreaGrids, //区域网格配置
+      showResourcemenu: false,
+      showToolbar: false,
+      showTabmap: false,
+      showStreetMenu: false,
+      showAreagrid: false,
+      showMaptool: false,
+      showMaptype: false,
+      showRealScene: false,
+      showLink: false,
+      showUser: false,
+      showUserInfo: false,
+      showMapCollection: false,
+      search: false,
+
+      showLeft: true,
+      showRight: true,
+      mapOptions: null
+      // analysisData:[{
+      //     year:'2016',
+      //     building_num:5645645,
+      //     company_num:0,
+      //     tax_income:0,//税收收入
+      //     tax_increase:0,//税收增幅
+      //     district_income:0,//区级收入
+      //     district_increase:0,//区级增幅
+      //     data:[{value:'10',},{value:'10',},{value:'20',},{value:'20',},{value:'10',},{value:'10',},{value:'20',}]
+      // }]
+    };
+  },
+  computed: {
+    analysisData() {
+      return this.$store.state.analysisData;
+    },
+    analysisDataForEveryJX() {
+      return this.$store.state.analysisDataForEveryJX;
+    },
+    currentItem: {
+      get() {
+        return this.$store.state.currentList;
+      },
+      set(val) {
+        return this.$store.commit("setCurrentList", val);
+      }
+    },
+    galleryData() {
+      return this.$store.state.infoBoxData;
+    }
+  },
+  mounted() {
+    let that = this;
+    this.$on("toolbar", function(v) {
+      that.toolbar(v);
+    });
+    //测试
+  },
+  methods: {
+    tabMap(i) {
+      switch (i) {
+        case 0:
+          this.showMap = true;
+          this.showRealScene = false;
+          this.showToolbar = true;
+          this.showResourcemenu = true;
+          this.showLink = false;
+          this.showLeft = true;
+          this.showRight = true;
+          this.baseLayer = config.baseLayer;
+          break;
+        case 1:
+          this.showMap = true;
+          this.showRealScene = false;
+          this.showToolbar = true;
+          this.showResourcemenu = true;
+          this.showLink = false;
+          this.showLeft = true;
+          this.showRight = true;
+          this.baseLayer = config.imgLayer;
+          break;
+        case 2:
+          this.showMap = false;
+          this.showRealScene = true;
+          this.showLink = false;
+          this.showLeft = false;
+          this.showRight = false;
+          this.showResourcemenu = false;
+          this.closeMenu();
+          break;
+        case 3:
+          this.showMap = false;
+          this.showRealScene = false;
+          this.showLink = true;
+          this.showToolbar = false;
+          this.showResourcemenu = false;
+          this.showLeft = false;
+          this.showRight = false;
+          this.closeMenu();
+          break;
+      }
+    },
+    closeMenu() {
+      this.showStreetMenu = false;
+      this.showMaptype = false;
+      this.showUser = false;
+      this.showMaptool = false;
+      this.$refs.CBDAnalysis.visible = false;
+    },
+    /*工具栏*/
+    toolbar(v) {
+      switch (v) {
+        case 0:
+          this.showStreetMenu = !this.showStreetMenu;
+          break;
+        case 1:
+          /*显示区域网格*/
+          this.showAreagrid = !this.showAreagrid;
+          break;
+        case 2:
+          /*显示地图工具*/
+          this.showMaptool = !this.showMaptool;
+          break;
+        case 3:
+          /*显示地图类型*/
+          this.showMaptype = !this.showMaptype;
+          break;
+      }
+    },
+    setCurrentList(currentItem) {
+      this.currentItem = currentItem;
+    },
+    changeBoundary(item) {
+      if (item == 0) {
+        this.boundary = BOU_QU_CY.features[0];
+      } else if (item == 1) {
+        this.boundary = DOMAIN_GNQ_CBD.features[0];
+      } else {
+        this.boundary = item;
+      }
+      // !item
+      //   ? (this.boundary = BOU_QU_CY.features[0])
+      //   : (this.boundary = item);
+    },
+    togglePanel() {
+      if (
+        this.showResourcemenu ||
+        this.showToolbar ||
+        this.showTabmap ||
+        this.showStreetMenu ||
+        this.showAreagrid ||
+        this.showMaptool ||
+        this.showMaptype
+      ) {
+        this.showResourcemenu = false;
+        this.showToolbar = false;
+        this.showTabmap = false;
+        this.showStreetMenu = false;
+        this.showAreagrid = false;
+        this.showMaptool = false;
+        this.showMaptype = false;
+        this.currentItem = {};
+      } else {
+        this.showResourcemenu = true;
+        this.showToolbar = true;
+        this.showTabmap = true;
+      }
+      this.$refs.CBDAnalysis.visible = false;
+    },
+    showGridMenu(item) {
+      this.showAreagrid = item;
+    },
+    toggleToolBar() {
+      this.showToolbar = !this.showToolbar;
+    },
+    toggleResourceList() {
+      this.showResourcemenu = !this.showResourcemenu;
+    },
+    openUser() {
+      this.showUser = !this.showUser;
+    },
+    openUserInfo() {
+      this.showUserInfo = !this.showUserInfo;
+    },
+    openCollection() {
+      this.showMapCollection = !this.showMapCollection;
+    },
+    setMap(val) {
+      this.mapOptions = val;
+    },
+    openSearch(){
+      this.search = !this.search;
+      this.showMaptool = false;
+    }
+  }
+};
+</script>
+
+<style lang="scss">
+html {
+  font-size: 100px !important;
+  overflow: hidden;
+}
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+#app {
+  width: 100vw;
+  height: 100vh;
+  font-size: 0.16rem;
+  overflow: hidden;
+}
+</style>
+<style lang="scss" module>
+.container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  .map {
+    flex-grow: 1;
+    width: 50%;
+    height: 100%;
+  }
+}
+.title {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+.toolbar {
+  position: absolute;
+  top: 0.55rem;
+  right: 1rem;
+  z-index: 1000;
+}
+.streetmenu {
+  position: absolute;
+  top: 0.95rem;
+  right: 3rem;
+  z-index: 1000;
+}
+.resourceList {
+  position: absolute;
+  top: 0.49rem;
+  left: 0.5rem;
+  z-index: 1000;
+}
+.secondList {
+  position: absolute;
+  top: 0.57rem;
+  left: 2.5rem;
+  z-index: 1000;
+}
+.mapetype {
+  position: absolute;
+  top: 0.95rem;
+  right: 2.3rem;
+  z-index: 1000;
+}
+.maptool {
+  position: absolute;
+  top: 0.95rem;
+  right: 1.65rem;
+  z-index: 1000;
+}
+.toggleToolBar {
+  position: absolute;
+  right: 0.05rem;
+  top: 0.55rem;
+}
+.toggleResourceList {
+  position: absolute;
+  left: 0.05rem;
+  top: 0.55rem;
+  transform: rotate(180deg);
+}
+.userAss {
+  position: absolute;
+  top: 1rem;
+  right: 0.5rem;
+  z-index: 1000;
+}
+.userinfo {
+  position: absolute;
+  top: 1rem;
+  right: 0.5rem;
+  z-index: 1000;
+}
+.collection {
+  position: absolute;
+  top: 4rem;
+  right: 0.1rem;
+  z-index: 1000;
+}
+.mapsearch{
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+}
+</style>

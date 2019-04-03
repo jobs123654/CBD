@@ -1,0 +1,187 @@
+<template>
+    <div :class="$style.root">
+
+    </div>
+</template>
+
+<script>
+    export default {
+        name: "TaxIncome",
+
+        data:function(){
+            return{
+                myChart:null,
+                option:{
+
+                    title: {
+                        text: 'CBD功能区历年税收（万元）',
+                        textStyle: {
+                            color: '#fffdff',
+                            fontSize: 18,
+                            fontFamily: 'Microsoft YaHei',
+                            fontWeight: 'lighter',
+                        },
+                        top: 20,
+                        left: 20,
+                    },
+                    grid: {
+                        top: '25%',
+                        left: '3%',
+                        right: '5%',
+                        bottom: '6%',
+                        containLabel: true,
+                    },
+                    // legend: {
+                    //     itemGap: 50,
+                    //     data: ['CBD功能区', '朝阳区'],
+                    //     textStyle: {
+                    //         color: '#f9f9f9',
+                    //         borderColor: '#fff'
+                    //     },
+                    //     icon: 'rect',
+                    //     bottom: '4%'
+                    // },
+                    xAxis: [{
+                        type: 'category',
+                        boundaryGap: true,
+                        axisLine: {
+                            show: true,
+                            lineStyle: {
+                                color: '#49c2dc'
+                            }
+                        },
+                        axisLabel: { //坐标轴刻度标签的相关设置
+                            textStyle: {
+                                color: '#fffbff',
+                                margin: 15,
+                            },
+                        },
+                        axisTick: {
+                            show: false,
+                        },
+                        data: ['2015年', '2016年', '2017年', '2018年'],
+                    }],
+                    yAxis: [{
+                        type: 'value',
+                        min: 0,
+                        max: 10000,
+                        splitNumber: 5,
+
+                        axisLine: {
+                            show: true,
+                            lineStyle: {
+                                color: '#49c2dc'
+                            }
+                        },
+                        axisLabel: { //坐标轴刻度标签的相关设置
+                            textStyle: {
+                                color: '#fffbff',
+                                margin: 15,
+                            },
+                              formatter:(value) =>value
+                        },
+                        axisTick: {
+                            show: false,
+                        },
+                        splitLine: {
+                            show: false
+                        },
+
+                    }],
+                    series: [
+                        {
+                        name: '朝阳区',
+                        type: 'line',
+                        // smooth: true, //是否平滑曲线显示
+                        // 			symbol:'circle',  // 默认是空心圆（中间是白色的），改成实心圆
+                        showAllSymbol: true,
+                        symbol: 'emptyCircle',
+                        symbolSize: 6,
+                        lineStyle: {
+                            normal: {
+                                color: "#28ffb3", // 线条颜色
+                            },
+                            borderColor: '#f0f'
+                        },
+
+                        itemStyle: {
+                            normal: {
+                                color: "#28ffb3",
+
+                            }
+                        },
+                        tooltip: {
+                            show: false
+                        },
+                        areaStyle: { //区域填充样式
+                            normal: {
+                                //线性渐变，前4个参数分别是x0,y0,x2,y2(范围0~1);相当于图形包围盒中的百分比。如果最后一个参数是‘true’，则该四个值是绝对像素位置。
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                                    offset: 0,
+                                    color: 'rgba(0,154,120,1)'
+                                },
+                                    {
+                                        offset: 1,
+                                        color: 'rgba(0,0,0, 0)'
+                                    }
+                                ], false),
+                                shadowColor: 'rgba(53,142,215, 0.9)', //阴影颜色
+                                shadowBlur: 20 //shadowBlur设图形阴影的模糊大小。配合shadowColor,shadowOffsetX/Y, 设置图形的阴影效果。
+                            }
+                        },
+                        data: [3080, 4080, 6040, 8020]
+                    }, {
+                        name: 'CBD功能区',
+                        type: 'bar',
+                        barWidth: 20,
+                        tooltip: {
+                            show: false
+                        },
+
+                        itemStyle: {
+                            normal: {
+                                color: function(params) {
+                                    var colorList = ['#0ec1ff', '#10cdff', '#12daff', '#15ebff', '#17f8ff', '#1cfffb', '#1dfff1'];
+                                    return colorList[params.dataIndex];
+                                }
+                            }
+                        },
+                        data: [3070, 4070, 6030, 8010]
+                    }]
+                }
+            }
+        },
+        mounted() {
+                this.myChart=echarts.init(this.$el)
+                this.myChart.setOption(this.option);
+        },
+        methods:{
+
+            /*
+            * title
+            * value[[k,v]]
+            * */
+            init:function(title,v){
+                let xs=[],ys=[],top=[];
+                this.option.title.text=title;
+
+                v.forEach(function (e,i) {
+                    xs.push(e[0])//获取年份
+                    ys.push(e[1]);
+                    top.push(Number.parseInt(e[1])+1000);
+                })
+                this.option.series[1].data=ys;
+                this.option.series[0].data=top;
+                this.option.xAxis.data=xs;
+                this.myChart.setOption(this.option);
+            },
+        }
+    }
+</script>
+<style lang="scss" module>
+    .root {
+        width: 100%;
+        height: 100%;
+
+    }
+</style>

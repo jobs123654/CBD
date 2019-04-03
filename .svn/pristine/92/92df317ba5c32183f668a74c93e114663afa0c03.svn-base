@@ -1,0 +1,252 @@
+<template>
+  <div :class="$style.root">
+
+  </div>
+</template>
+
+<script>
+import { Map, TileLayer, Polygon,DistanceTool,AreaTool } from "maptalks";
+export default {
+  props: {
+    option: Object,
+    baseLayer: Object,
+    boundary: Object
+  },
+  data() {
+    return {
+      map: {},
+      viewPoint:{},
+      featureLayer:{}
+    };
+  },
+  mounted() {
+    let mask = new Polygon(this.boundary.geometry.coordinates);
+    this.featureLayer = new TileLayer("baseLayer", this.baseLayer).setMask(mask);
+    this.option.baseLayer = this.featureLayer;
+    this.map = new Map(this.$el, this.option);
+    /**/
+    // this.option.center=
+
+    /**/
+    let c=this.$store.state.viewPoint;
+
+    this.map.setCenter([ c.x, c.y]);
+    this.initControls();
+    let that=this
+
+
+    this.map.on('moving moveend', function (e) {
+      let point=e.target.getCenter();
+      if(that.$parent.$refs.cesium){
+        that.$parent.$refs.cesium.changeCameraPosition(point)
+      }
+
+    });
+
+
+    /*二维联动三维缩放*/
+    this.map.on('zooming zoomend', function (e) {
+      //e.target.getCenter(), e.target.getZoom()
+      let cesium=that.$parent.$refs.cesium;
+      // cesium.setZoom(e.target.getZoom());
+    });
+
+    this.map.on('pitch', function (e) {
+      // e.target.getPitch()
+    });
+
+    this.map.on('rotate', function (e) {
+      // e.target.getBearing()
+    });
+    this.map.on('dblclick', function (e) {
+      /*  /!*判断测距工具是否激活*!/
+       if(that.distanceTool.isEnabled()){
+         that.map.removeControl(that.distanceTool)
+       }*/
+      /*判断测面工具是否激活*/
+     /* if(that.areaTool.isEnabled()){
+        that.map.removeControl(that.areaTool)
+      }*/
+    });
+
+
+
+
+  },
+  methods:{
+    initControls:function(){
+      /*初始化测距工具*/
+      this.distanceTool=new DistanceTool({
+        'once':true,
+        'symbol': {
+          'lineColor' : '#34495e',
+          'lineWidth' : 2
+        },
+        'vertexSymbol' : {
+          'markerType'        : 'ellipse',
+          'markerFill'        : '#1bbc9b',
+          'markerLineColor'   : '#000',
+          'markerLineWidth'   : 3,
+          'markerWidth'       : 10,
+          'markerHeight'      : 10
+        },
+
+        'labelOptions' : {
+          'textSymbol': {
+            'textFaceName': 'monospace',
+            'textFill' : '#fff',
+            'textLineSpacing': 1,
+            'textHorizontalAlignment': 'right',
+            'textDx': 15,
+            'markerLineColor': '#b4b3b3',
+            'markerFill' : '#000'
+          },
+          'boxStyle' : {
+            'padding' : [6, 2],
+            'symbol' : {
+              'markerType' : 'square',
+              'markerFill' : '#000',
+              'markerFillOpacity' : 0.9,
+              'markerLineColor' : '#b4b3b3'
+            }
+          }
+        },
+        'clearButtonSymbol' :[{
+          'markerType': 'square',
+          'markerFill': '#000',
+          'markerLineColor': '#b4b3b3',
+          'markerLineWidth': 2,
+          'markerWidth': 15,
+          'markerHeight': 15,
+          'markerDx': 20
+        }, {
+          'markerType': 'x',
+          'markerWidth': 10,
+          'markerHeight': 10,
+          'markerLineColor' : '#fff',
+          'markerDx': 20
+        }],
+        'language' : 'zh-CN'
+      });
+      /*初始化测面工具*/
+      this.areaTool = new AreaTool({
+        'once':true,
+        'symbol': {
+          'lineColor' : '#1bbc9b',
+          'lineWidth' : 2,
+          'polygonFill' : '#000fff',
+          'polygonOpacity' : 0.3
+        },
+        'vertexSymbol' : {
+          'markerType'        : 'ellipse',
+          'markerFill'        : '#34495e',
+          'markerLineColor'   : '#1bbc9b',
+          'markerLineWidth'   : 3,
+          'markerWidth'       : 10,
+          'markerHeight'      : 10
+        },
+        'labelOptions' : {
+          'textSymbol': {
+            'textFaceName': 'monospace',
+            'textFill' : '#fff',
+            'textLineSpacing': 1,
+            'textHorizontalAlignment': 'right',
+            'textDx': 15
+          },
+          'boxStyle' : {
+            'padding' : [6, 2],
+            'symbol' : {
+              'markerType' : 'square',
+              'markerFill' : '#000',
+              'markerFillOpacity' : 0.9,
+              'markerLineColor' : '#b4b3b3'
+            }
+          },
+
+        },
+        'clearButtonSymbol' :[{
+          'markerType': 'square',
+          'markerFill': '#000',
+          'markerLineColor': '#b4b3b3',
+          'markerLineWidth': 2,
+          'markerWidth': 15,
+          'markerHeight': 15,
+          'markerDx': 22
+        }, {
+          'markerType': 'x',
+          'markerWidth': 10,
+          'markerHeight': 10,
+          'markerLineColor' : '#fff',
+          'markerDx': 22
+        }],
+        language: 'zh-CN'
+      });
+    },
+    setCenter:function (c) {
+      this.map.setCenter(c);
+    },
+    setZoom:function (v) {
+      this.map.setZoom(Math.ceil(v/1000));
+    },
+    /*叠加地图*/
+    overlayLayer:function (item) {
+      let layer=new TileLayer(item.id,{
+        renderer : 'canvas', // set TileLayer's renderer to canvas
+        // crossOrigin : 'anonymous',
+        urlTemplate: item.urlTemplate,
+        tileSystem:item.tileSystem,
+        // spatialReference:item.spatialReference,
+      });
+      this.map.addLayer(layer)
+      /*var vectorLayers = this.map.getLayers(function (layer) {
+        console.log(layer)
+      });*/
+    },
+    /*移除地图*/
+    removeLayer(id){
+      var vectorLayers = this.map.getLayers(function (layer) {
+        return layer._id==id
+      });
+      this.map.removeLayer(vectorLayers)
+    },
+    /*距离量算*/
+     measureDistance:function () {
+      this.distanceTool.addTo(this.map);
+    },
+    /*测面*/
+    measureArea:function () {
+      this.areaTool.addTo(this.map)
+      console.log(this.areaTool.getMode())
+    },
+    /*清除地图覆盖物*/
+    clear:function () {
+
+
+    }
+  },
+
+  watch:{
+    baseLayer(){
+      let mask = new Polygon(this.boundary.geometry.coordinates);
+      let baseLayer = new TileLayer("baseLayer", this.baseLayer).setMask(mask);
+      this.map.setBaseLayer(baseLayer);
+    },
+    boundary() {
+      let mask = new Polygon(this.boundary.geometry.coordinates);
+      this.map.getBaseLayer().setMask(mask);
+      this.map.fitExtent(mask.getExtent());
+    },
+    /*监听地图事件 三维图位置同步*/
+    viewPoint(v){
+      console.log(v)
+    },
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  width: 100%;
+  height: 100%;
+}
+</style>

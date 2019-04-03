@@ -1,0 +1,42 @@
+<template>
+  <div class="userinfo-root">
+    <li v-for="(item, i) in userInfo" :key="i">{{i}}：{{item}}</li>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "UserInfo",
+  data() {
+    return {
+      userInfo: {
+        用户名: "超级管理员",
+        部门: "运维部门"
+      }
+    };
+  },
+  mounted() {
+    let self = this;
+    setTimeout(function() {
+      self.$emit("openUserInfo");
+    }, 3000);
+  },
+  beforeDestroy() {},
+  methods: {}
+};
+</script>
+
+<style lang='scss' scoped>
+.userinfo-root {
+  height: 80px;
+  background: #2e4c68;
+  color: #fff;
+  border: 1px solid #028CCF;
+  li {
+    line-height: 40px;
+    height: 40px;
+    list-style: none;
+    margin: 0 10px;
+  }
+}
+</style>

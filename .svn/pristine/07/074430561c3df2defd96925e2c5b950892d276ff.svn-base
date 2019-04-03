@@ -1,0 +1,62 @@
+<template>
+  <!--底图切换-->
+  <div :class="$style.root">
+    <div :class="$style.shiliang" @click="LoadBaseLayer"></div>
+    <div :class="$style.yingxiang" @click="LoadImgLayer"></div>
+    <div :class="$style.sanwei" @click="LoadTdLayer"></div>
+    <div :class="$style.ersanwei" @click="tt"></div>
+  </div>
+</template>
+
+<script>
+export default {
+  methods: {
+    /*切换为二维地图*/
+    LoadBaseLayer: function() {
+      this.$emit("tabMap", 0);
+    },
+    /*切换为影像地图*/
+    LoadImgLayer: function() {
+      this.$emit("tabMap", 1);
+    },
+    /*切换为三维地图*/
+    LoadTdLayer: function() {
+      this.$emit("tabMap", 2);
+    },
+    /*二三维地图联动*/
+    tt: function() {
+      this.$emit("tabMap", 3);
+    }
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 9;
+  display: flex;
+  div {
+    width: 0.62rem;
+    height: 0.62rem;
+    cursor: pointer;
+    text-align: center;
+    margin: 0.1rem;
+    color: #fff;
+  }
+  .shiliang {
+    background: url(../../assets/images/矢量.png);
+  }
+  .yingxiang {
+    background: url(../../assets/images/影像.png);
+  }
+  .sanwei {
+    background: url(../../assets/images/三维.png);
+  }
+  .ersanwei {
+    background: url(../../assets/images/三维.png);
+  }
+}
+</style>

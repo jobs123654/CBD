@@ -1,0 +1,127 @@
+<template>
+  <div :class="$style.root">
+      <div id="map" :class="$style.box">
+
+      </div>
+      <div :class="$style.box" id="cesium">
+
+      </div>
+  </div>
+</template>
+
+<script>
+    import { Map, TileLayer,DragHandler } from "maptalks";
+    export default {
+        name: "twoThreeDimensional",
+        props:{
+            /*二维图*/
+            option: Object,
+            baseLayer: Object,
+            /*三维图*/
+            option1:Object,
+            url:String,
+            center:Object
+        },
+        data:function () {
+            return{
+               map:{},
+                viewer:{},
+                X:0,
+                Y:0,
+                Z:0,
+            }
+        },
+        mounted:function(){
+            this.loadMap();
+            this.loadThreeDimensional();
+        },
+        methods:{
+               loadMap:function () {
+                   let that=this
+                   let baseLayer = new TileLayer("baseLayer", this.baseLayer);
+                   this.option.baseLayer =baseLayer;
+                   this.map = new Map('map', this.option);
+
+                   /*监听地图点击事件*/
+                   this.map.on('dragrotating', function (param) {
+                       // that.X=param.point2d.x;
+                            console.log(param)
+                   });
+                   this.map.on('moving', function (param) {
+                       // that.X=param.point2d.x;
+                       console.log(param)
+                   });
+
+                   let dragHander=new DragHandler();
+                   // dragHander.enable();
+               } ,
+               loadThreeDimensional:function () {
+                this.viewer = new Cesium.Viewer('cesium', this.option);
+                this.viewer._cesiumWidget._creditContainer.style.display = 'none'; // 关闭图标
+
+                var scene = this.viewer.scene;
+                var widget = this.viewer.cesiumWidget;
+
+
+
+                try {
+                    var promise = scene.open(this.url);
+
+                    Cesium.when.all(promise, function(layers) {
+                        /*创建笛卡尔空间坐标*/
+                        let b=that.center;
+                        var point = new Cesium.Cartesian3(b.x,b.y,b.z);
+
+                        var pointCartographic = scene.camera._projection.unproject(point);
+                        //转换至经纬度
+                        var pointCX = Cesium.Math.toDegrees(pointCartographic.longitude);
+
+                        var pointCY = Cesium.Math.toDegrees(pointCartographic.latitude);
+                        //设置相机位置，定位至模型
+                        scene.camera.setView({
+                            destination: Cesium.Cartesian3.fromDegrees(pointCX, pointCY, pointCartographic.height),
+                            orientation: {
+                                heading: 0.723822947387097,
+                                pitch: -0.45061029898791416,
+                                roll: 6.283185307179586
+                            }
+                        });
+                    }, function() {
+                        var title = '加载SCP失败，请检查网络连接状态或者url地址是否正确？';
+                        widget.showErrorPanel(title, undefined, e);
+                    });
+                } catch (e) {
+                    if (widget._showRenderLoopErrors) {
+                        var title = '渲染时发生错误，已停止渲染。';
+                        widget.showErrorPanel(title, undefined, e);
+                    }
+                }
+            },
+
+        },
+        watch:{
+            X:function (v) {
+                console.log('x '+v);
+            },
+            Y:function (v) {
+
+            },
+            Z:function (v) {
+
+            },
+        }
+    }
+</script>
+
+<style lang="scss" module>
+    .root {
+        width: 100%;
+        height: 100%;
+    }
+    .box{
+        width: 49%;
+        height: inherit;
+        border: 1px solid #eeeeee;
+        float: left;
+    }
+</style>

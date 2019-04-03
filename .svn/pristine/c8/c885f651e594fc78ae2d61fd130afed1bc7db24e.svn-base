@@ -1,0 +1,26 @@
+import Vue from "vue";
+import App from "./App.vue";
+import Router from 'vue-router'
+import Home from "./components/view/Home.vue";
+import store from "./store";
+import iView from "iview";
+import "iview/dist/styles/iview.css";
+import router from './router'
+Vue.config.productionTip = false;
+
+// 全局引用echarts
+import echarts from 'echarts'
+Vue.prototype.$echarts = echarts
+
+//全局事件总线
+window.EventBus = new Vue();
+Vue.use(iView);
+Vue.use(Router)
+
+
+
+new Vue({
+  router,
+  store,
+  render: h => h(App)
+}).$mount("#app");

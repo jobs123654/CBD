@@ -1,0 +1,281 @@
+<template>
+  <div :class="$style.root"></div>
+</template>
+
+<script>
+let color = ["#15EBFF", "#00CEFF", "#94d96c", "#0bbcb7", "#1a9bfc", "#7049f0"];
+ let center=["33%", "55%"];
+export default {
+  name: "BuildingNums",
+  data: function() {
+    return {
+      myChart: null,
+     
+      option: {
+        // backgroundColor: '#142058',
+        title: {
+          text: "CBD功能区企业入驻数量(个)",
+       textStyle: {
+            color: "#fffdff",
+            fontSize: 18,
+            fontFamily: "Microsoft YaHei",
+            fontWeight: "lighter"
+          },
+          top: 20,
+          left: 20
+        },
+
+        tooltip: {
+          trigger: "item",
+          show: true,
+          formatter: "{b} : <br/>{d}%",
+          backgroundColor: "rgba(0,0,0,0.7)", // 背景
+          padding: [8, 10], //内边距
+          extraCssText: "box-shadow: 0 0 3px rgba(255, 255, 255, 0.4);" //添加阴影
+        },
+        legend: {
+          orient: "vertical",
+          // icon: 'circle',
+          right: "13%",
+          top: "35%",
+          itemGap: 20,
+          data: ["2016年", "2017年", "2018年"],
+          textStyle: {
+            color: "#fft"
+          }
+        },
+        series: [
+          {
+            name: "Line 1",
+            type: "pie",
+            clockWise: false,
+            radius: [60, 80],
+            center: center,
+            itemStyle: {
+              normal: {
+                label: {
+                  show: false
+                },
+                labelLine: {
+                  show: false
+                },
+                shadowBlur: 40,
+                borderWidth: 10,
+                shadowColor: "rgba(0, 0, 0, 0)" //边框阴影
+              }
+            },
+            hoverAnimation: false,
+            startAngle: 90,
+            label: {
+              borderRadius: "10"
+            },
+            data: [
+              {
+                value: 64.6,
+                name: "2018年",
+                itemStyle: {
+                  normal: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                      {
+                        offset: 0,
+                        color: color[0]
+                      },
+                      {
+                        offset: 1,
+                        color: color[1]
+                      }
+                    ])
+                  }
+                }
+              },
+              {
+                value: 35.4,
+                name: "",
+                tooltip: {
+                  show: false
+                },
+                itemStyle: {
+                  normal: {
+                    color: "#393d50",
+                    label: {
+                      show: false
+                    },
+                    labelLine: {
+                      show: false
+                    }
+                  },
+                  emphasis: {
+                    color: "#393d50"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            name: "Line 2",
+            type: "pie",
+            clockWise: false,
+            radius: [30, 50],
+            center:center,
+            itemStyle: {
+              normal: {
+                label: {
+                  show: false
+                },
+                labelLine: {
+                  show: false
+                },
+                shadowBlur: 40,
+                borderWidth: 10,
+                shadowColor: "rgba(0, 0, 0, 0)" //边框阴影
+              }
+            },
+            hoverAnimation: false,
+            startAngle: 90,
+            data: [
+              {
+                value: 56.7,
+                name: "2017年",
+                itemStyle: {
+                  normal: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                      {
+                        offset: 0,
+                        color: color[2]
+                      },
+                      {
+                        offset: 1,
+                        color: color[3]
+                      }
+                    ])
+                  }
+                }
+              },
+              {
+                value: 43.3,
+                name: "",
+                tooltip: {
+                  show: false
+                },
+                itemStyle: {
+                  normal: {
+                    color: "#393d50",
+                    label: {
+                      show: false
+                    },
+                    labelLine: {
+                      show: false
+                    }
+                  },
+                  emphasis: {
+                    color: "#393d50"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            name: "Line 3",
+            type: "pie",
+            clockWise: false,
+            radius: [0, 20],
+            center:center,
+            itemStyle: {
+              normal: {
+                label: {
+                  show: false
+                },
+                labelLine: {
+                  show: false
+                },
+                shadowBlur: 40,
+                borderWidth: 10,
+                shadowColor: "rgba(0, 0, 0, 0)" //边框阴影
+              }
+            },
+            hoverAnimation: false,
+            startAngle: 90,
+            data: [
+              {
+                value: 30,
+                name: "2016年",
+                itemStyle: {
+                  normal: {
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                      {
+                        offset: 0,
+                        color: color[4]
+                      },
+                      {
+                        offset: 1,
+                        color: color[5]
+                      }
+                    ])
+                  }
+                }
+              },
+              {
+                value: 60,
+                name: "",
+                tooltip: {
+                  show: false
+                },
+                itemStyle: {
+                  normal: {
+                    color: "#393d50",
+                    label: {
+                      show: false
+                    },
+                    labelLine: {
+                      show: false
+                    }
+                  },
+                  emphasis: {
+                    color: "#393d50"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      myChart: null
+    };
+  },
+  mounted() {
+    this.myChart = echarts.init(this.$el);
+    this.myChart.setOption(this.option);
+  },
+  methods: {
+    init: function(title, data) {
+      this.option.title.text = title;
+
+      let d = this.option.series,
+        con = [];
+      data.forEach(function(item, i) {
+        Object.assign(d[i].data[0], {
+          name: item[0],
+          value: item[1]
+        });
+
+        Object.assign(d[i].data[1], {
+          name: item[0],
+          value: 100 - item[1]
+        });
+
+        con.push(item[0]);
+      });
+      this.option.legend.data = con;
+      this.option.series = d;
+      this.myChart.setOption(this.option);
+    }
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  width: 100%;
+  height: 100%;
+}
+</style>

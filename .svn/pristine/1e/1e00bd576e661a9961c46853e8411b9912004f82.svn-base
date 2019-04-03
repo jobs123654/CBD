@@ -1,0 +1,70 @@
+<template>
+  <div class="tree">
+    <ResourceMenu
+      :menu="resourceList"
+      v-if="resourceList.length"
+      @setCurrentList="setCurrentList"
+      class="resource-menu"
+    ></ResourceMenu>
+    <TreeScene :list="currentItem" v-if="currentItem" class="second-menu"></TreeScene>
+  </div>
+</template>
+
+<script>
+import ResourceMenu from "./../../resourceMenu/ResourceMenu";
+import TreeScene from "./TreeScene";
+export default {
+  name: "SceneTree",
+  data() {
+    return {
+      resourceList: [],
+      currentItem: {}
+    };
+  },
+  components: {
+    ResourceMenu,
+    TreeScene
+  },
+  computed: {},
+  mounted() {
+    this.init();
+  },
+  beforeDestroy() {},
+  methods: {
+    init() {
+      let list = config.resourceList;
+      let sceneTree = [];
+      list.forEach(element => {
+        if (element.name == "楼宇分析") {
+          sceneTree.push(element);
+        }
+      });
+      this.resourceList = sceneTree;
+    },
+    setCurrentList(item) {
+      if (this.currentItem.name) {
+        this.currentItem = {};
+        Viewer.entities.removeAll();
+      } else {
+        this.currentItem = item;
+      }
+    }
+  }
+};
+</script>
+
+<style lang='scss' scoped>
+.tree {
+  z-index: 1000;
+  .resource-menu {
+    position: absolute;
+    top: 0.4rem;
+    left: 0.1rem;
+  }
+  .second-menu {
+    position: absolute;
+    top: 0.55rem;
+    left: 2.5rem;
+  }
+}
+</style>

@@ -1,0 +1,65 @@
+<template>
+  <div id="app">
+    <Map  :option="config.map" v-show="visible" :baseLayer="config.baseLayer" :imgLayer="config.imgLayer"/>
+    <!--三维图-->
+   <Cesium :option="config.threeDimensional.option" v-show="visible1" ref="cesium" :url="config.threeDimensional.url" :center="config.threeDimensional.center" ></Cesium>
+
+   <!--二三维联动-->
+      <TwoThreeDimensional v-show="visible2" :option="config.map" :baseLayer="config.baseLayer" :option1="config.threeDimensional.option" :url="config.threeDimensional.url" :center="config.threeDimensional.center"></TwoThreeDimensional>
+    <!--底图切换-->
+
+
+    <TabMap :medium="Medium"  @showMap="showMap" @showThreeDimensional="showThreeDimensional"></TabMap>
+  </div>
+</template>
+
+<script>
+
+import config from "./config/config";
+import Map from "./components/Map";
+import Medium from './components/common/Medium'
+import TabMap from './components/map/TabMap';
+import Cesium from './components/map/Cesium'
+import TwoThreeDimensional from './components/map/TwoThreeDimensional'
+export default {
+  name: "app",
+  components: {
+    Map,
+    TabMap,
+    Cesium,
+      TwoThreeDimensional,
+  },
+  data() {
+    return {
+      config,
+      Medium,
+        visible:true,//控制二维地图的显示和隐藏
+        visible1:false,
+        visible2:false,
+    };
+  },
+    methods:{
+      showMap:function () {
+
+      },
+        showThreeDimensional:function () {
+
+        }
+    }
+};
+</script>
+
+<style lang="scss">
+html {
+  font-size: 62.5% !important;
+}
+body {
+  margin: 0;
+  padding: 0;
+}
+#app {
+  width: 100vw;
+  height: 100vh;
+  font-size: 1.6rem;
+}
+</style>

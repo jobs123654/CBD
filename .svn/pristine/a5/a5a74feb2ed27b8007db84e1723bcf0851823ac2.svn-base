@@ -1,0 +1,25 @@
+<template>
+  <div class="collection-root"></div>
+</template>
+
+<script>
+export default {
+  name: "MapCollection",
+  data() {
+    return {};
+  },
+  components: {},
+  computed: {},
+  mounted() {},
+  beforeDestroy() {},
+  methods: {}
+};
+</script>
+
+<style lang='scss' scoped>
+.collection-root {
+  width: 250px;
+  height: 280px;
+  background: #2e4c68;
+}
+</style>

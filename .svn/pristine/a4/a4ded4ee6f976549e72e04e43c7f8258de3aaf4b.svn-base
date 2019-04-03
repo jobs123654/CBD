@@ -1,0 +1,72 @@
+<template>
+  <div class="tree">
+    <ZoningGrid v-show="showGrid"></ZoningGrid>
+    <ResourceMenu
+      :menu="resourceList"
+      v-if="resourceList.length"
+      @showGridMenu="showGridMenu"
+      class="resource-menu"
+    ></ResourceMenu>
+    <TreeScene :list="currentItem" v-if="currentItem" class="second-menu"></TreeScene>
+  </div>
+</template>
+
+<script>
+import ResourceMenu from "./../../resourceMenu/ResourceMenu";
+import TreeScene from "./TreeScene";
+import ZoningGrid from "./../sceneTool/ZoningGrid";
+export default {
+  name: "SceneTree",
+  data() {
+    return {
+      resourceList: [],
+      showGrid: false
+    };
+  },
+  computed: {
+    currentItem() {
+      return this.$store.state.currentList;
+    }
+  },
+  components: {
+    ResourceMenu,
+    TreeScene,
+    ZoningGrid
+  },
+  mounted() {
+    this.init();
+  },
+  methods: {
+    init() {
+      let list = config.resourceList;
+      let sceneTree = [];
+      list.forEach(element => {
+        if (element.name == "楼宇分析") {
+          sceneTree.push(element);
+        }
+      });
+
+      this.resourceList = sceneTree;
+    },
+    showGridMenu(bool) {
+      this.showGrid = bool;
+    }
+  }
+};
+</script>
+
+<style lang='scss' scoped>
+.tree {
+  z-index: 1000;
+  .resource-menu {
+    position: absolute;
+    top: 0.4rem;
+    left: 0.3rem;
+  }
+  .second-menu {
+    position: absolute;
+    top: 0.55rem;
+    left: 2.2rem;
+  }
+}
+</style>

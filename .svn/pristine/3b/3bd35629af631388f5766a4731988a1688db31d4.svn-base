@@ -1,0 +1,25 @@
+import axios from "axios";
+const mockURL = "/mock";
+export const getData = async param => {
+  let data = await axios(`${mockURL}/`);
+};
+
+export const getJX = async param => {
+  let data = await axios(`/geojson/DOMAIN_XJ_CBD.json`);
+  return data.data.features;
+};
+
+export const getLY = async param => {
+  let data = await axios(`/geojson/LY_CBD.json`);
+  return data.data.features;
+};
+
+export const getXY = async param => {
+  let data = await axios(`/geojson/cbd经营地址.json`);
+  return data.data.features;
+};
+
+export const getQY = async param => {
+  let data = await axios(`/geojson/cbd经营地址.json`);
+  return data.data.features;
+};

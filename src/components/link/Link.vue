@@ -1,0 +1,65 @@
+<template>
+  <div class="link" @mousemove="mousemoveEvent">
+    <LinkMap id="map" @changeMap="changeMap" :sceneBounds="sceneToMap" :isLink="isLink"></LinkMap>
+    <LinkScene id="scene" @changeScene="changeScene" :mapPoints="mapToScene" :isLink="isLink"></LinkScene>
+  </div>
+</template>
+
+<script>
+import LinkMap from "./LinkMap";
+import LinkScene from "./LinkScene";
+export default {
+  name: "Link",
+  data() {
+    return {
+      mapToScene: null,
+      sceneToMap: null,
+      isLink: true
+    };
+  },
+  components: {
+    LinkMap,
+    LinkScene
+  },
+  methods: {
+    changeMap(points) {
+      if (this.mapToScene) {
+        this.mapToScene = null;
+      }
+      this.mapToScene = points;
+    },
+    changeScene(bounds) {
+      if (this.sceneToMap) {
+        this.sceneToMap = null;
+      }
+      this.sceneToMap = bounds;
+    },
+    mousemoveEvent(e) {
+      let clientX = e.clientX;
+      if (clientX > 960) {
+        this.isLink = true;
+      } else {
+        this.isLink = false;
+      }
+    }
+  }
+};
+</script>
+
+<style lang='scss' scoped>
+.link {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  #map {
+    flex-grow: 1;
+    width: 50%;
+    height: 100%;
+  }
+  #scene {
+    flex-grow: 1;
+    width: 50%;
+    height: 100%;
+  }
+}
+</style>

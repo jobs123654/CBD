@@ -1,0 +1,261 @@
+<template>
+  <div></div>
+</template>
+
+<script>
+export default {
+  name: "GalleryQuery",
+  data() {
+    return {
+      queryBuildInfo: {
+        title: "",
+        data: []
+      }
+    };
+  },
+  components: {},
+  computed: {},
+  mounted() {
+    this.init();
+  },
+  beforeDestroy() {
+    if (scenePickHandler) {
+      scenePickHandler.removeInputAction(
+        this.handleScene,
+        Cesium.ScreenSpaceEventType.LEFT_CLICK
+      );
+      scenePickHandler = scenePickHandler && scenePickHandler.destroy();
+      scenePickHandler = null;
+    }
+  },
+  methods: {
+    init() {
+      if (Viewer) {
+        window.scenePickHandler = new Cesium.ScreenSpaceEventHandler(
+          Viewer.scene.canvas
+        );
+        scenePickHandler.setInputAction(
+          this.handleScene,
+          Cesium.ScreenSpaceEventType.LEFT_CLICK
+        );
+      }
+    },
+    handleScene(e) {
+      Viewer.entities.removeById("Dynamic");
+      let self = this;
+      // 楼座查询参数
+      let galleryParams = config.threeDimensional.gallery;
+      // 楼宇查询参数
+      let buildParams = config.threeDimensional.build;
+      // 当前场景高度
+      let currentHeight = Viewer.scene.camera.position.z;
+      // 选中图层
+      let selectLayer = Viewer.scene.layers.getSelectedLayer();
+      // 选中模型ID
+      let selectModelId = parseInt(selectLayer.getSelection()[0]);
+      // 查询key值
+      let queryKey = selectLayer.name + "_" + selectModelId;
+      if (currentHeight < galleryParams.height) {
+        // 楼座查询
+        let joinItem = new SuperMap.JoinItem({
+          foreignTableName: galleryParams.foreignTableName,
+          joinFilter: galleryParams.joinFilter,
+          joinType: "LEFTJOIN"
+        });
+        let param = new SuperMap.QueryBySQLParameters({
+          queryParams: new SuperMap.FilterParameter({
+            name: galleryParams.queryParams.name,
+            joinItems: [joinItem],
+            fields: galleryParams.queryParams.fields,
+            attributeFilter: galleryParams.query_key + "='" + queryKey + "'"
+          }),
+          expectCount: 1
+        });
+
+        L.supermap.queryService(galleryParams.url).queryBySQL(param, result => {
+          if (result.result && result.result.currentCount) {
+            self.handleData(result, "楼座信息");
+          } else {
+            self.$Message.error("暂无楼座数据！");
+            self.$emit("queryLZdata", null);
+          }
+        });
+      } else {
+        // 楼宇查询
+        let galleryParam = new SuperMap.QueryBySQLParameters({
+          queryParams: new SuperMap.FilterParameter({
+            name: galleryParams.queryParams.name,
+            attributeFilter: galleryParams.query_key + "='" + queryKey + "'"
+          }),
+          expectCount: 1
+        });
+
+        L.supermap
+          .queryService(galleryParams.url)
+          .queryBySQL(galleryParam, result => {
+            if (result.result && result.result.currentCount) {
+              let queryPoint =
+                result.result.recordsets[0].features.features[0].geometry
+                  .coordinates[0][0][0];
+              let point = L.point(queryPoint[0], queryPoint[1]);
+              let joinItem = new SuperMap.JoinItem({
+                foreignTableName: buildParams.foreignTableName,
+                joinFilter: buildParams.joinFilter,
+                joinType: "LEFTJOIN"
+              });
+              let param = new SuperMap.QueryByGeometryParameters({
+                geometry: point,
+                expectCount: 1,
+                queryParams: new SuperMap.FilterParameter({
+                  name: buildParams.queryParams.name,
+                  fields: buildParams.queryParams.fields,
+                  joinItems: [joinItem]
+                })
+              });
+              L.supermap
+                .queryService(buildParams.url)
+                .queryByGeometry(param, result => {
+                  if (result.result && result.result.currentCount) {
+                    self.handleData(result, "楼宇信息");
+                    self.drawData(result, "楼宇信息");
+                  } else {
+                    self.$Message.error("暂无楼宇数据！");
+                  }
+                });
+            }
+          });
+      }
+    },
+    handleData(res, title) {
+      if (this.queryBuildInfo.title.length > 0) {
+        this.queryBuildInfo = {
+          title: "",
+          data: []
+        };
+      }
+      this.queryBuildInfo.title = title;
+      let features = res.result.recordsets[0].features.features;
+      let properties = features[0].properties;
+      if (title.indexOf("楼座") > -1) {
+        let office = {
+          label: "写字楼（办公楼）",
+          props: {}
+        };
+        let apart = {
+          label: "高档公寓",
+          props: {}
+        };
+        let busness = {
+          label: "商业及服务业",
+          props: {}
+        };
+        let hotel = {
+          label: "酒店",
+          props: {}
+        };
+        let info = {
+          label: "基本信息",
+          props: {}
+        };
+        for (let key in properties) {
+          if (key.indexOf("写字楼") > -1) {
+            office.props[key] =
+              properties[key] == "" ? "暂无数据" : properties[key];
+          } else if (key.indexOf("高档公寓") > -1) {
+            apart.props[key] =
+              properties[key] == "" ? "暂无数据" : properties[key];
+          } else if (key.indexOf("商业") > -1) {
+            busness.props[key] =
+              properties[key] == "" ? "暂无数据" : properties[key];
+          } else if (key.indexOf("酒店") > -1) {
+            hotel.props[key] =
+              properties[key] == "" ? "暂无数据" : properties[key];
+          } else {
+            info.props[key] =
+              properties[key] == "" ? "暂无数据" : properties[key];
+          }
+        }
+        this.queryBuildInfo.data.push(info);
+        this.queryBuildInfo.data.push(office);
+        this.queryBuildInfo.data.push(apart);
+        this.queryBuildInfo.data.push(busness);
+        this.queryBuildInfo.data.push(hotel);
+      } else {
+        let quartet = {
+          label: "四方情况",
+          props: {}
+        };
+        let planning = {
+          label: "规划实施情况",
+          props: {}
+        };
+        let operation = {
+          label: "楼宇运营情况",
+          props: {}
+        };
+        let info = {
+          label: "基本情况",
+          props: {}
+        };
+        for (let key in properties) {
+          if (key.indexOf("四方") > -1) {
+            quartet.props[key] =
+              properties[key] == "" ? "暂无数据" : properties[key];
+          } else if (key.indexOf("规划实施") > -1) {
+            planning.props[key] =
+              properties[key] == "" ? "暂无数据" : properties[key];
+          } else if (key.indexOf("楼宇运营") > -1) {
+            operation.props[key] =
+              properties[key] == "" ? "暂无数据" : properties[key];
+          } else {
+            info.props[key] =
+              properties[key] == "" ? "暂无数据" : properties[key];
+          }
+        }
+        this.queryBuildInfo.data.push(info);
+        this.queryBuildInfo.data.push(quartet);
+        this.queryBuildInfo.data.push(planning);
+        this.queryBuildInfo.data.push(operation);
+      }
+      this.$emit("queryLZdata", this.queryBuildInfo);
+    },
+    drawData(res, title) {
+      let data = res.result.recordsets[0].features;
+      data.features.map((feature, k) => {
+        let polygons = feature.geometry.coordinates[0][0];
+        let str = "[";
+        polygons.forEach((polygon, i) => {
+          let pointC = new Cesium.Cartesian3(polygon[0], polygon[1], 0);
+          let pointCartographic = Viewer.scene.camera._projection.unproject(
+            pointC
+          );
+          let pointCX = Cesium.Math.toDegrees(pointCartographic.longitude);
+          let pointCY = Cesium.Math.toDegrees(pointCartographic.latitude);
+          if (i == 0) {
+            str += pointCX + "," + pointCY;
+          } else {
+            str += "," + pointCX + "," + pointCY;
+          }
+        });
+        str += "]";
+        let polygonArr = JSON.parse(str);
+        Viewer.entities.add({
+          id: "Dynamic",
+          name: feature.properties.楼宇名称 || "面",
+          polygon: {
+            hierarchy: Cesium.Cartesian3.fromDegreesArray(polygonArr),
+            material: new Cesium.Color.fromCssColorString("#FF0033").withAlpha(
+              0.3
+            )
+          },
+          clampToS3M: true // 贴在S3M模型表面
+        });
+      });
+      Viewer.zoomTo(Viewer.entities);
+    }
+  }
+};
+</script>
+
+<style lang='scss' scoped>
+</style>

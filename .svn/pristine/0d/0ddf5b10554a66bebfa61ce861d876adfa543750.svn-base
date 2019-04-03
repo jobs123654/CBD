@@ -1,0 +1,81 @@
+<template>
+  <div :class="$style.root">
+
+  </div>
+</template>
+
+<script>
+
+import { Map, TileLayer } from "maptalks";
+import Medium from './common/Medium'
+export default {
+  props: {
+    option: Object,
+    baseLayer: Object,
+    imgLayer:Object,
+    tdLayer:Object,
+  },
+  data() {
+    return {
+      map: {},
+      viewer:{}
+    };
+  },
+  mounted() {
+    let baseLayer = new TileLayer("baseLayer", this.baseLayer);
+    this.option.baseLayer =baseLayer;
+    this.map = new Map(this.$el, this.option);
+
+
+
+    /*监听地图切换控件传递的数据*/
+    let that=this
+    Medium.$on('tabMap',function (e) {
+
+       switch (e.key) {
+         case 0:
+          that.switchBaseMap();
+           break;
+         case 1:
+          that.switchImgMap()
+           break;
+         case 2:
+           that.switchTdMap()
+           break;
+         case 3:
+           that.interactive2D3D()
+           break;
+       }
+     });
+  },
+  methods:{
+    /*切换二维图*/
+    switchBaseMap:function () {
+      let baseLayer=new TileLayer('baseLayer',this.baseLayer);
+
+      this.map.setBaseLayer(baseLayer)
+    },
+    /*切换影像地图*/
+    switchImgMap:function () {
+     let i=new TileLayer('imgLayer',this.imgLayer);
+      this.map.setBaseLayer(i)
+
+    },
+    /*切换三维地图*/
+    switchTdMap:function () {
+
+    },
+    /*二三维地图联动*/
+    interactive2D3D:function () {
+
+    },
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  width: 100%;
+  height: 100%;
+}
+</style>

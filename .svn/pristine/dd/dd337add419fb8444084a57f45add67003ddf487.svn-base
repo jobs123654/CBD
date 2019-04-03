@@ -1,0 +1,36 @@
+<!--  -->
+<template>
+  <div class="scene">
+    <CesiumScene></CesiumScene>
+    <SceneBar class="scene-bar"></SceneBar>
+  </div>
+</template>
+
+<script>
+import CesiumScene from "./CesiumScene";
+import SceneBar from "./sceneTool/SceneBar";
+export default {
+  name: "Scene",
+  data() {
+    return {};
+  },
+  components: {
+    CesiumScene,
+    SceneBar
+  },
+  mounted() {},
+  methods: {}
+};
+</script>
+<style lang="scss" scoped>
+.scene {
+  width: 100%;
+  height: 100%;
+  .scene-bar {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.16rem;
+    z-index: 1000;
+  }
+}
+</style>

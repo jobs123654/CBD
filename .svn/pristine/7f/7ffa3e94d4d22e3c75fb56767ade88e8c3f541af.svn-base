@@ -1,0 +1,495 @@
+<template>
+  <section>
+    <div class="collection-root">
+      <div class="title">
+        <div class="title-my">我的收藏</div>
+        <Icon type="ios-close-circle-outline" title="关闭" @click="close"/>
+      </div>
+      <div class="tree">
+        <Tree :data="firstData" :load-data="loadData" :render="renderContent"></Tree>
+      </div>
+    </div>
+
+    <Modal v-model="removeModal" width="360">
+      <p slot="header" style="color:#f60;text-align:center">
+        <Icon type="ios-information-circle"></Icon>
+        <span>删除节点/地图</span>
+      </p>
+      <div style="text-align:center">
+        <p>确定删除{{removeName}}?</p>
+      </div>
+      <div slot="footer">
+        <Button size="large" @click="closeRemoveModal">取消</Button>
+        <Button type="error" size="large" :loading="modal_loading" @click="removeNode">删除</Button>
+      </div>
+    </Modal>
+    <Modal v-model="appendModal" width="360">
+      <p slot="header" style="color:#2d8cf0;text-align:center">
+        <Icon type="ios-document-outline"/>
+        <span>新增节点/收藏</span>
+      </p>
+      <div style="text-align:center">
+        <RadioGroup v-model="selectRadio">
+          <Radio label="节点">
+            <Icon type="ios-folder-outline"/>
+            <span>节点</span>
+          </Radio>
+          <Radio label="地图">
+            <Icon type="ios-map-outline"/>
+            <span>地图</span>
+          </Radio>
+        </RadioGroup>
+        <Card dis-hover v-if="selectRadio == '节点'">
+          <div>
+            节点名称：
+            <Input v-model="nodeValue" placeholder="输入新增节点名称" style="width: 180px" clearable/>
+            <p v-show="nodeTitle" style="color:red">请输入节点名称</p>
+          </div>
+          <div style="margin-top: 10px">
+            上级节点：
+            <Input v-model="selectNode" style="width: 180px" disabled/>
+          </div>
+        </Card>
+        <Card dis-hover v-else>
+          <div>
+            地图名称：
+            <Input v-model="mapValue" placeholder="输入新增收藏地图名称" style="width: 180px" clearable/>
+            <p v-show="mapTitle" style="color:red">请输入地图名称</p>
+          </div>
+          <div style="margin-top: 10px">
+            上级节点：
+            <Input v-model="selectNode" style="width: 180px" disabled/>
+          </div>
+        </Card>
+      </div>
+      <div slot="footer">
+        <Button size="large" @click="closeAppendModal">取消</Button>
+        <Button type="primary" size="large" :loading="modal_loading" @click="append">新增</Button>
+      </div>
+    </Modal>
+  </section>
+</template>
+
+<script>
+export default {
+  name: "MapCollection",
+  data() {
+    return {
+      firstData: [
+        {
+          title: "收藏夹",
+          loading: false,
+          children: [],
+          type: "node",
+          render: (h, { root, node, data }) => {
+            return h(
+              "span",
+              {
+                style: {
+                  display: "inline-block",
+                  width: "100%"
+                }
+              },
+              [
+                h("span", [
+                  h("Icon", {
+                    props: {
+                      type: "ios-folder-outline"
+                    },
+                    style: {
+                      marginRight: "8px"
+                    }
+                  }),
+                  h("span", data.title)
+                ]),
+                h(
+                  "span",
+                  {
+                    style: {
+                      display: "inline-block",
+                      float: "right",
+                      marginRight: "2px"
+                    }
+                  },
+                  [
+                    h("Button", {
+                      props: {
+                        icon: "md-add",
+                        type: "info",
+                        size: "small"
+                      },
+                      style: {
+                        marginRight: "8px"
+                      },
+                      on: {
+                        click: () => {
+                          this.addendObj = {
+                            root: root,
+                            node: node,
+                            data: data
+                          };
+                          this.selectNode = node.node.title;
+                          this.addendNode();
+                        }
+                      }
+                    })
+                  ]
+                )
+              ]
+            );
+          }
+        }
+      ],
+      removeObj: null,
+      removeModal: false,
+      removeName: "",
+      modal_loading: false,
+      appendModal: false,
+      addendObj: null,
+      selectRadio: "节点",
+      nodeValue: "",
+      selectNode: "",
+      mapValue: "",
+      nodeTitle: false,
+      mapTitle: false
+    };
+  },
+  computed: {
+    mapViewObj() {
+      return this.$store.state.mapViewObj;
+    },
+    features() {
+      return this.$store.state.features;
+    },
+    currentList() {
+      return this.$store.state.currentList;
+    },
+    secondCurrentList() {
+      return this.$store.state.secondCurrentList;
+    },
+    maptype() {
+      return this.$store.state.mapType;
+    },
+    gridArray() {
+      return this.$store.state.gridArray;
+    }
+  },
+  mounted() {},
+  beforeDestroy() {},
+  methods: {
+    close() {
+      this.$emit("openCollection");
+    },
+    loadData(item, callback) {
+      // TODO 查询数据库操作
+      // setTimeout(() => {
+      //   const data = [
+      //     {
+      //       title: "目录",
+      //       loading: false,
+      //       nodeDbKey: "1",
+      //       children: []
+      //     },
+      //     {
+      //       title: "地图",
+      //       nodeDbKey: "1",
+      //       mapInfo: "1111"
+      //     }
+      //   ];
+      //   callback(data);
+      // }, 500);
+      setTimeout(() => {
+        let data = [];
+        if (data.length == 0) {
+          this.$Message.info("此节点暂无地图数据！");
+        }
+        callback(data);
+      }, 1000);
+    },
+    renderContent(h, { root, node, data }) {
+      // 渲染目录节点
+      if (node.node.type == "node") {
+        return h(
+          "span",
+          {
+            style: {
+              display: "inline-block",
+              width: "100%"
+            }
+          },
+          [
+            h("span", [
+              h("Icon", {
+                props: {
+                  type: "ios-folder-outline"
+                },
+                style: {
+                  marginRight: "8px"
+                }
+              }),
+              h("span", data.title)
+            ]),
+            h(
+              "span",
+              {
+                style: {
+                  display: "inline-block",
+                  float: "right",
+                  marginRight: "2px"
+                }
+              },
+              [
+                h("Button", {
+                  props: {
+                    icon: "md-add",
+                    type: "info",
+                    size: "small"
+                  },
+                  style: {
+                    marginRight: "8px"
+                  },
+                  on: {
+                    click: () => {
+                      this.addendObj = {
+                        root: root,
+                        node: node,
+                        data: data
+                      };
+                      this.selectNode = node.node.title;
+                      this.addendNode();
+                    }
+                  }
+                }),
+                h("Button", {
+                  props: {
+                    icon: "md-trash",
+                    type: "error",
+                    size: "small"
+                  },
+                  style: {
+                    marginRight: "8px"
+                  },
+                  on: {
+                    click: () => {
+                      this.removeObj = {
+                        root: root,
+                        node: node,
+                        data: data
+                      };
+                      this.removeName = node.node.title;
+                      this.removeModal = true;
+                    }
+                  }
+                })
+              ]
+            )
+          ]
+        );
+      } else {
+        // 渲染地图节点
+        return h(
+          "span",
+          {
+            style: {
+              display: "inline-block",
+              width: "100%"
+            }
+          },
+          [
+            h("span", [
+              h("Icon", {
+                props: {
+                  type: "ios-map-outline"
+                },
+                style: {
+                  marginRight: "8px"
+                }
+              }),
+              h("span", data.title)
+            ]),
+            h(
+              "span",
+              {
+                style: {
+                  display: "inline-block",
+                  float: "right",
+                  marginRight: "2px"
+                }
+              },
+              [
+                h("Button", {
+                  props: {
+                    icon: "md-star",
+                    type: "primary",
+                    size: "small"
+                  },
+                  style: {
+                    marginRight: "8px"
+                  },
+                  on: {
+                    click: () => {
+                      console.log("恢复地图状态");
+                    }
+                  }
+                }),
+                h("Button", {
+                  props: {
+                    icon: "md-trash",
+                    type: "error",
+                    size: "small"
+                  },
+                  style: {
+                    marginRight: "8px"
+                  },
+                  on: {
+                    click: () => {
+                      this.removeObj = {
+                        root: root,
+                        node: node,
+                        data: data
+                      };
+                      this.removeName = node.node.title;
+                      this.removeModal = true;
+                    }
+                  }
+                })
+              ]
+            )
+          ]
+        );
+      }
+    },
+    remove(root, node, data) {
+      const parentKey = root.find(el => el === node).parent;
+      const parent = root.find(el => el.nodeKey === parentKey).node;
+      const index = parent.children.indexOf(data);
+      parent.children.splice(index, 1);
+    },
+    append() {
+      let self = this;
+      let data = self.addendObj.data;
+      const children = data.children || [];
+      if (self.selectRadio == "节点") {
+        if (self.nodeValue == "") {
+          self.nodeTitle = true;
+          return;
+        }
+        self.modal_loading = true;
+        children.push({
+          title: self.nodeValue,
+          loading: false,
+          type: "node",
+          children: []
+        });
+      } else {
+        if (self.mapValue == "") {
+          self.mapTitle = true;
+          return;
+        }
+        self.modal_loading = true;
+        children.push({
+          title: self.mapValue,
+          type: "map"
+        });
+        // 构建当前地图参数
+        const mapObj = {
+          mapViewObj: self.mapViewObj,
+          features: self.features,
+          currentList: self.currentList,
+          secondCurrentList: self.secondCurrentList,
+          maptype: self.maptype,
+          gridArray: self.gridArray
+        };
+        console.log(mapObj);
+      }
+      self.$set(data, "children", children);
+      // TODO 新增数据库操作
+
+      self.modal_loading = false;
+      self.appendModal = false;
+      self.nodeTitle = false;
+      self.mapTitle = false;
+      self.selectRadio = "节点";
+      self.nodeValue = "";
+      self.mapValue = "";
+    },
+    closeRemoveModal() {
+      this.removeModal = false;
+    },
+    closeAppendModal() {
+      this.appendModal = false;
+    },
+    addendNode() {
+      this.appendModal = true;
+    },
+    removeNode() {
+      this.remove(
+        this.removeObj.root,
+        this.removeObj.node,
+        this.removeObj.data
+      );
+      this.modal_loading = true;
+      // TODO 删除数据库操作
+
+      this.removeModal = false;
+      this.modal_loading = false;
+    }
+  }
+};
+</script>
+
+<style lang='scss' scoped>
+.collection-root {
+  width: 280px;
+  height: 355px;
+  background: #2e4c68;
+  color: #fff;
+  border: 1px solid #028ccf;
+  .title {
+    height: 35px;
+    border-bottom: 1px solid #fff;
+    line-height: 35px;
+    .title-my {
+      padding: 0 10px;
+    }
+    .ivu-icon {
+      position: absolute;
+      top: 7.5px;
+      right: 10px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+  }
+  .tree {
+    height: calc(100% - 35px);
+    padding: 5px 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .tree::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  .tree::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    -webkit-box-shabow: inset 0 0 5px rgba(56, 134, 210, 0.2);
+    background: rgba(56, 134, 210, 0.8);
+  }
+  .tree::-webkit-scrollbar-track {
+    -webkit-box-shabow: inset 0 0 5px rgba(56, 134, 210, 0.2);
+    border-radius: 5px;
+    background: rgba(56, 134, 210, 0.4);
+  }
+}
+</style>
+<style>
+.ivu-tree-title {
+  color: #fff;
+}
+.ivu-tree-title:hover {
+  color: #000;
+}
+.ivu-card {
+  margin-top: 10px;
+}
+</style>

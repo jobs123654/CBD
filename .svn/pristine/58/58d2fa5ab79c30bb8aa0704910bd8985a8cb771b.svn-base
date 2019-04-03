@@ -1,0 +1,48 @@
+<template>
+  <div class="user-root">
+    <li @click="getUserInfo">用户信息</li>
+    <li @click="openCollection">地图收藏</li>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "User",
+  data() {
+    return {};
+  },
+  components: {},
+  computed: {},
+  mounted() {},
+  beforeDestroy() {},
+  methods: {
+    getUserInfo() {
+      this.$emit("openUserInfo")
+      this.$emit("openUser");
+    },
+    openCollection() {
+      this.$emit("openCollection")
+      this.$emit("openUser");
+    }
+  }
+};
+</script>
+
+<style lang='scss' scoped>
+.user-root {
+  width: 90px;
+  height: 80px;
+  background: #2e4c68;
+  color: #fff;
+  cursor: pointer;
+  li {
+    list-style: none;
+    height: 40px;
+    text-align: center;
+    line-height: 40px;
+  }
+  li:hover {
+    background: #686868;
+  }
+}
+</style>

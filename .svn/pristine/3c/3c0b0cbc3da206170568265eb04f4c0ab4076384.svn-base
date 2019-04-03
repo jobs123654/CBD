@@ -1,0 +1,47 @@
+<template>
+    <div :class="$style.root">
+          <p @click="tab(0)" :class="active==0?$style.height:$style.normal">功能区</p>
+          <p @click="tab(1)" :class="active==1?$style.height:$style.normal">中心区</p>
+    </div>
+</template>
+<script>
+    export default {
+        name: "TabBtn",
+        props:{
+
+        },
+        data:function () {
+            return{
+                active:0,
+            }
+        },
+        methods:{
+            tab:function (i) {
+             this.active=i;
+            }
+        }
+    }
+</script>
+
+<style lang="scss" module>
+   .root{
+       position: absolute;
+       left: 28%;
+       top:90%;
+       width:7%;
+       border: 1px solid black;
+       display: flex;
+
+       p{
+        width: 50%;
+           padding-left: 7%;
+           cursor: pointer;
+       }
+       .normal{
+           background-color: #fff;
+       }
+       .height{
+        background-color: #66ccee;
+       }
+   }
+</style>

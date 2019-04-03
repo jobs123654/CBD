@@ -1,0 +1,221 @@
+<template>
+  <div :class="$style.root" v-show="list.name">
+    <div :class="$style.title">{{ list.name }}</div>
+    <div v-for="(item, i) in list.children" :key="i">
+      <span
+        :class="i === itemIndex ? [$style.item, $style.current] : $style.item"
+        @click="queryAll(i, item)"
+      >
+        <img src="../../../assets/images/point@.png" v-if="i === itemIndex">
+        <img src="../../../assets/images/point.png" v-else>
+        {{ item.name }}
+      </span>
+      <CheckboxGroup v-model="checkBoxList" @on-change="changeBox">
+        <div
+          v-for="(type, j) in item.children"
+          :key="j"
+          v-show="i === itemIndex"
+          :class="$style.thirdItem"
+        >
+          <Checkbox :label="type.name"></Checkbox>
+          <span :class="$style.color">
+            <ColorPicker v-model="type.color" size="small" @on-change="selectColor"/>
+          </span>
+        </div>
+      </CheckboxGroup>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "TreeScene",
+  props: {
+    list: Object
+  },
+  beforeDestroy() {
+    Viewer&&Viewer.entities.removeAll();
+  },
+  data() {
+    return {
+      itemIndex: -1,
+      checkBoxList: [],
+      currentFirst: "",
+      currentList: []
+    };
+  },
+  watch: {
+    list(val, oldVal) {
+      this.itemIndex = -1;
+    }
+  },
+  methods: {
+    queryAll(i, item) {
+      let self = this;
+      self.checkBoxList = [];
+      self.currentFirst = item.name;
+      this.itemIndex = i;
+      let queryName = item.name;
+      item.children.forEach(element => {
+        self.checkBoxList.push(element.name);
+      });
+      self.changeBox(self.checkBoxList);
+    },
+    parseQueryParam(current) {
+      if (this.list) {
+        let item = {
+          param: {
+            queryParams: {}
+          }
+        };
+        item.color = current.color;
+        item.url = this.list.scene_url;
+        item.foreignTableName = this.list.foreignTableName;
+        if (current.name.indexOf("楼宇") > -1) {
+          item.joinFilter = `${this.list.foreignTableName}.${
+            this.list.pro_name
+          }=${this.list.scene_dataset}.${this.list.other_pro_name}`;
+        } else {
+          item.joinFilter = `${this.list.foreignTableName}.${
+            this.list.park_name
+          }=${this.list.scene_dataset}.${this.list.other_part_name}`;
+        }
+        item.joinType = "LEFTJOIN";
+        item.param.datasetNames = [
+          this.list.datasource + ":" + this.list.scene_dataset
+        ];
+        item.param.queryParams.name =
+          this.list.scene_dataset + "@" + this.list.datasource;
+        if (current.queryAttributeFilter) {
+          item.param.queryParams.fields = [];
+          item.param.queryParams.attributeFilter = current.queryAttributeFilter;
+        } else {
+          item.param.queryParams.fields = [];
+          item.param.queryParams.attributeFilter = "1 = 1";
+        }
+        this.queryData(item);
+      }
+    },
+    queryData(params) {
+      let self = this;
+      let joinItem = new SuperMap.JoinItem({
+        foreignTableName: params.foreignTableName,
+        joinFilter: params.joinFilter,
+        joinType: params.joinType
+      });
+      let param = new SuperMap.QueryBySQLParameters({
+        datasetNames: params.param.datasetNames,
+        queryParams: new SuperMap.FilterParameter({
+          name: params.param.queryParams.name,
+          joinItems: [joinItem],
+          fields: params.param.queryParams.fields,
+          attributeFilter: params.param.queryParams.attributeFilter
+        })
+      });
+      L.supermap.queryService(params.url).queryBySQL(param, result => {
+        if (result.type == "processCompleted") {
+          let data = result.result.recordsets[0].features;
+          self.addLayer(data, params.color);
+        }
+      });
+    },
+    addLayer(data, color) {
+      if (data.features.length) {
+        data.features.map((feature, k) => {
+          let polygons = feature.geometry.coordinates[0][0];
+          let str = "[";
+          polygons.forEach((polygon, i) => {
+            let pointC = new Cesium.Cartesian3(polygon[0], polygon[1], 0);
+            let pointCartographic = Viewer.scene.camera._projection.unproject(
+              pointC
+            );
+            let pointCX = Cesium.Math.toDegrees(pointCartographic.longitude);
+            let pointCY = Cesium.Math.toDegrees(pointCartographic.latitude);
+            if (i == 0) {
+              str += pointCX + "," + pointCY;
+            } else {
+              str += "," + pointCX + "," + pointCY;
+            }
+          });
+          str += "]";
+          let polygonArr = JSON.parse(str);
+          Viewer.entities.add({
+            // id: feature.properties.ID || "面",
+            name: feature.properties.楼宇名称 || "面",
+            polygon: {
+              hierarchy: Cesium.Cartesian3.fromDegreesArray(polygonArr),
+              material: new Cesium.Color.fromCssColorString(color).withAlpha(
+                0.3
+              )
+            },
+            clampToS3M: true // 贴在S3M模型表面
+          });
+        });
+        Viewer.zoomTo(Viewer.entities);
+      } else {
+        this.$Message.error("暂无数据！");
+      }
+    },
+    changeBox(items) {
+      let self = this;
+      self.currentList = [];
+      Viewer.entities.removeAll();
+      this.list.children.forEach(child => {
+        if (child.name == self.currentFirst) {
+          self.currentList = child;
+        }
+      });
+      items.forEach(item => {
+        self.currentList.children.forEach(data => {
+          if (item == data.name) {
+            self.parseQueryParam(data);
+          }
+        });
+      });
+    },
+    selectColor() {
+      this.changeBox(this.checkBoxList);
+    }
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  padding: 0.2rem 0;
+  background: url(../../../assets/images/面板分解/top.png) top/100% 30px
+      no-repeat,
+    url(../../../assets/images/面板分解/未标题-1_06.png) bottom/100% 18px
+      no-repeat,
+    url(../../../assets/images/面板分解/1像素.png) 0 30px/100% calc(100% - 48px)
+      no-repeat;
+  color: #f9feff;
+  opacity: 0.9;
+  cursor: pointer;
+  min-width: 2rem;
+  .title {
+    margin-left: 0.2rem;
+    border-bottom: 2px solid #59b3ff;
+    display: inline-block;
+    font-size: 0.13rem;
+  }
+  .current {
+    background: url(../../../assets/images/面板分解/选中.png);
+    color: #2d342a;
+  }
+  .item {
+    margin: 0.1rem 0.08rem 0 0.08rem;
+    padding: 0 0.3rem;
+    font-size: 0.13rem;
+    line-height: 0.3rem;
+    display: block;
+  }
+  .thirdItem {
+    font-size: 0.12rem;
+    margin: 0 10px;
+    padding: 5px 0.4rem;
+    line-height: 0.3rem;
+    background: #123a59;
+  }
+}
+</style>

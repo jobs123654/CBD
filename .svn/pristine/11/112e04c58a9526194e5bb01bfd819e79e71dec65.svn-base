@@ -1,0 +1,106 @@
+<template>
+ <div :class="$style.root">
+
+ </div>
+</template>
+
+<script>
+    export default {
+         name: "Cesium",
+        props:{
+            option:Object,
+            url:String,
+            center:Object
+        },
+        data:function(){
+             return{
+               viewer:{},
+                 flyToPoint:{},
+             }
+        },
+        mounted:function(){
+             this.loadMap();
+        },
+        methods:{
+            /*加载三维地图*/
+            loadMap:function () {
+                this.viewer = new Cesium.Viewer(this.$el, this.option);
+                this.viewer._cesiumWidget._creditContainer.style.display = 'none'; // 关闭图标
+
+                var scene = this.viewer.scene;
+                var widget = this.viewer.cesiumWidget;
+                let that=this
+
+                try {
+                    var promise = scene.open(this.url);
+
+                    Cesium.when.all(promise, function(layers) {
+                        /*创建笛卡尔空间坐标*/
+                        let b=that.center;
+                        var point = new Cesium.Cartesian3(b.x,b.y,b.z);
+
+                        var pointCartographic = scene.camera._projection.unproject(point);
+                        //转换至经纬度
+                        var pointCX = Cesium.Math.toDegrees(pointCartographic.longitude);
+
+                        var pointCY = Cesium.Math.toDegrees(pointCartographic.latitude);
+                        //设置相机位置，定位至模型
+                        scene.camera.setView({
+                            destination: Cesium.Cartesian3.fromDegrees(pointCX, pointCY, pointCartographic.height),
+                            orientation: {
+                                heading: 0.723822947387097,
+                                pitch: -0.45061029898791416,
+                                roll: 6.283185307179586
+                            }
+                        });
+                    }, function() {
+                        var title = '加载SCP失败，请检查网络连接状态或者url地址是否正确？';
+                        widget.showErrorPanel(title, undefined, e);
+                    });
+                } catch (e) {
+                    if (widget._showRenderLoopErrors) {
+                        var title = '渲染时发生错误，已停止渲染。';
+                        widget.showErrorPanel(title, undefined, e);
+                    }
+                }
+            },
+            /*飞行至某点*/
+            flyTo:function (point) {
+                viewer.camera.flyTo({
+                        destination :  Cesium.Cartesian3.fromDegrees(point.x,point.y,point.z), // 设置位置
+                        orientation: {
+                        heading: 0.723822947387097,
+                        pitch: -0.45061029898791416,
+                        roll: 6.283185307179586
+                    },
+                    duration:5, // 设置飞行持续时间，默认会根据距离来计算
+                    complete: function () {
+                        // 到达位置后执行的回调函数
+                        console.log('到达目的地');
+                    },
+                    cancle: function () {
+                        // 如果取消飞行则会调用此函数
+                        console.log('飞行取消')
+                    },
+                    /* pitchAdjustHeight: -90, // 如果摄像机飞越高于该值，则调整俯仰俯仰的俯仰角度，并将地球保持在视口中。
+                     maximumHeight:5000, // 相机最大飞行高度
+                     flyOverLongitude: 100, // 如果到达目的地有2种方式，设置具体值后会强制选择方向飞过这个经度*/
+                });
+            },
+        },
+        watch:{
+            flyToPoint:function (v) {
+                console.log(v);
+            }
+        }
+
+
+    }
+</script>
+
+<style lang="scss" module>
+    .root {
+        width: 100%;
+        height: 100%;
+    }
+</style>

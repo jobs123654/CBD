@@ -1,0 +1,470 @@
+<template>
+  <div :class="$style.root"></div>
+</template>
+
+<script>
+import {
+  Map,
+  TileLayer,
+  Polygon,
+  DistanceTool,
+  AreaTool,
+  Coordinate,
+  Marker,
+  VectorLayer,
+  GeoJSON,
+  Circle
+} from "maptalks";
+import { BigPointLayer, ExtrudePolygonLayer } from "maptalks.biglayer";
+import { DataSet, MaptalksLayer } from "mapv";
+export default {
+  props: {
+    option: Object,
+    baseLayer: Object,
+    boundary: Object,
+    maptype: String
+  },
+  data() {
+    return {
+      map: {},
+      viewPoint: {},
+      featureLayer: {}
+    };
+  },
+  computed: {
+    features() {
+      return this.$store.state.features;
+    }
+  },
+  mounted() {
+    this.option.baseLayer = new TileLayer("baseLayer", this.baseLayer);
+    this.map = new Map(this.$el, this.option);
+    let mask = new Polygon(this.boundary.geometry.coordinates, {
+      symbol: {
+        polygonFill: "#fff",
+        polygonOpacity: 0.2,
+        lineColor: "#1bbc9b"
+      }
+    });
+    this.map.getBaseLayer().setMask(mask);
+    // let maskLayer =
+    //   this.map.getLayer("maskLayer") ||
+    //   new VectorLayer("maskLayer").addTo(this.map);
+    // mask.addTo(maskLayer);
+    let c = this.$store.state.viewPoint;
+
+    this.map.setCenter([c.x, c.y]);
+    this.initControls();
+    let that = this;
+
+    this.map.on("moving moveend", function(e) {
+      let point = e.target.getCenter();
+      if (that.$parent.$refs.cesium) {
+        that.$parent.$refs.cesium.changeCameraPosition(point);
+      }
+    });
+
+    /*二维联动三维缩放*/
+    this.map.on("zooming zoomend", function(e) {
+      //e.target.getCenter(), e.target.getZoom()
+      // let cesium=that.$parent.$refs.cesium;
+      // cesium.setZoom(e.target.getZoom());
+    });
+
+    this.map.on("pitch", function(e) {
+      // e.target.getPitch()
+    });
+
+    this.map.on("rotate", function(e) {
+      // e.target.getBearing()
+    });
+    this.map.on("dblclick", function(e) {
+      /*  /!*判断测距工具是否激活*!/
+       if(that.distanceTool.isEnabled()){
+         that.map.removeControl(that.distanceTool)
+       }*/
+      /*判断测面工具是否激活*/
+      /* if(that.areaTool.isEnabled()){
+        that.map.removeControl(that.areaTool)
+      }*/
+    });
+  },
+  watch: {
+    baseLayer() {
+      let mask = new Polygon(this.boundary.geometry.coordinates);
+      let baseLayer = new TileLayer("baseLayer", this.baseLayer).setMask(mask);
+      this.map.setBaseLayer(baseLayer);
+    },
+    boundary() {
+      let mask = new Polygon(this.boundary.geometry.coordinates, {
+        symbol: {
+          polygonFill: "#fff",
+          polygonOpacity: 0.2,
+          lineColor: "#1bbc9b"
+        }
+      });
+      this.map.getBaseLayer().setMask(mask);
+      // let maskLayer =
+      //   this.map.getLayer("maskLayer").clear() ||
+      //   new VectorLayer("maskLayer").addTo(this.map);
+      // mask.addTo(maskLayer);
+      this.map.fitExtent(mask.getExtent());
+
+      this.clearData();
+
+      if (this.maptype === "point") {
+        this.initPointLayer();
+      } else {
+        this.initMapVLayer();
+      }
+    },
+    /*监听地图事件 三维图位置同步*/
+    viewPoint(v) {
+      console.log(v);
+    },
+    features() {
+      this.clearData();
+      if (this.features.length > 0 && !this.features[0].color) {
+        this.initExtrudePolygonLayer();
+      } else if (this.maptype === "point") {
+        this.features.map(this.initPointLayer);
+      } else {
+        this.initMapVLayer(
+          this.features.reduce(
+            (p, c) => {
+              ;
+              return { features: p.features.concat(c.features) };
+            },
+            { features: [] }
+          )
+        );
+      }
+    },
+    maptype() {
+      if (this.features.length > 0 && this.features[0].color) {
+        this.clearData();
+      } else {
+        return;
+      }
+      if (this.maptype === "point") {
+        this.features.map(this.initPointLayer);
+      } else {
+        this.initMapVLayer(
+          this.features.reduce(
+            (p, c) => {
+              ;
+              return { features: p.features.concat(c.features) };
+            },
+            { features: [] }
+          )
+        );
+      }
+    }
+  },
+  methods: {
+    initControls: function() {
+      /*初始化测距工具*/
+      this.distanceTool = new DistanceTool({
+        once: true,
+        symbol: {
+          lineColor: "#34495e",
+          lineWidth: 2
+        },
+        vertexSymbol: {
+          markerType: "ellipse",
+          markerFill: "#1bbc9b",
+          markerLineColor: "#000",
+          markerLineWidth: 3,
+          markerWidth: 10,
+          markerHeight: 10
+        },
+
+        labelOptions: {
+          textSymbol: {
+            textFaceName: "monospace",
+            textFill: "#fff",
+            textLineSpacing: 1,
+            textHorizontalAlignment: "right",
+            textDx: 15,
+            markerLineColor: "#b4b3b3",
+            markerFill: "#000"
+          },
+          boxStyle: {
+            padding: [6, 2],
+            symbol: {
+              markerType: "square",
+              markerFill: "#000",
+              markerFillOpacity: 0.9,
+              markerLineColor: "#b4b3b3"
+            }
+          }
+        },
+        clearButtonSymbol: [
+          {
+            markerType: "square",
+            markerFill: "#000",
+            markerLineColor: "#b4b3b3",
+            markerLineWidth: 2,
+            markerWidth: 15,
+            markerHeight: 15,
+            markerDx: 20
+          },
+          {
+            markerType: "x",
+            markerWidth: 10,
+            markerHeight: 10,
+            markerLineColor: "#fff",
+            markerDx: 20
+          }
+        ],
+        language: "zh-CN"
+      });
+      /*初始化测面工具*/
+      this.areaTool = new AreaTool({
+        once: true,
+        symbol: {
+          lineColor: "#1bbc9b",
+          lineWidth: 2,
+          polygonFill: "#fff",
+          polygonOpacity: 0.3
+        },
+        vertexSymbol: {
+          markerType: "ellipse",
+          markerFill: "#34495e",
+          markerLineColor: "#1bbc9b",
+          markerLineWidth: 3,
+          markerWidth: 10,
+          markerHeight: 10
+        },
+        labelOptions: {
+          textSymbol: {
+            textFaceName: "monospace",
+            textFill: "#fff",
+            textLineSpacing: 1,
+            textHorizontalAlignment: "right",
+            textDx: 15
+          },
+          boxStyle: {
+            padding: [6, 2],
+            symbol: {
+              markerType: "square",
+              markerFill: "#000",
+              markerFillOpacity: 0.9,
+              markerLineColor: "#b4b3b3"
+            }
+          }
+        },
+        clearButtonSymbol: [
+          {
+            markerType: "square",
+            markerFill: "#000",
+            markerLineColor: "#b4b3b3",
+            markerLineWidth: 2,
+            markerWidth: 15,
+            markerHeight: 15,
+            markerDx: 22
+          },
+          {
+            markerType: "x",
+            markerWidth: 10,
+            markerHeight: 10,
+            markerLineColor: "#fff",
+            markerDx: 22
+          }
+        ],
+        language: "zh-CN"
+      });
+    },
+    setCenter: function(c) {
+      this.map.setCenter(c);
+    },
+    setZoom: function(v) {
+      this.map.setZoom(Math.ceil(v / 1000));
+    },
+    /*叠加地图*/
+    overlayLayer: function(item) {
+      let layer = new TileLayer(item.id, {
+        // renderer: "canvas", // set TileLayer's renderer to canvas
+        // crossOrigin : 'anonymous',
+        urlTemplate: item.urlTemplate,
+        tileSystem: item.tileSystem,
+        opacity: 0.5
+        // spatialReference:item.spatialReference,
+      });
+      this.map.addLayer(layer);
+      /*var vectorLayers = this.map.getLayers(function (layer) {
+        console.log(layer)
+      });*/
+    },
+    /*移除地图*/
+    removeLayer(id) {
+      var vectorLayer = this.map.getLayer(id);
+      this.map.removeLayer(vectorLayer);
+    },
+    /*距离量算*/
+    measureDistance: function() {
+      this.distanceTool.addTo(this.map);
+    },
+    /*测面*/
+    measureArea: function() {
+      this.areaTool.addTo(this.map);
+    },
+    /*清除地图覆盖物*/
+    clear: function() {
+      let allLayers = this.map.getLayers(e => true).map(e => e.getId());
+      this.map.removeLayer(allLayers);
+    },
+    initPointLayer(geojson) {
+      let mask = new Polygon(this.boundary.geometry.coordinates);
+      let symbol = {
+        markerType: "ellipse",
+        markerWidth: 10,
+        markerHeight: 10,
+        markerDx: 0,
+        markerDy: 0,
+        markerFill: geojson.color,
+        markerLineOpacity: 0
+      };
+      let data = geojson.features.map(e => e.geometry.coordinates);
+      var layer = new BigPointLayer("data" + geojson.name, data)
+        .setStyle({
+          filter: true,
+          symbol: symbol
+        })
+        .setMask(mask)
+        .addTo(this.map);
+    },
+    initMapVLayer(geojson) {
+      let mask = new Polygon(this.boundary.geometry.coordinates);
+      let data = geojson.features.map(e => {
+        return {
+          geometry: e.geometry,
+          count: 1
+        };
+      });
+      let dataSet = new DataSet(data);
+      let options = {
+        fillStyle: "rgba(55, 50, 250, 0.8)",
+        shadowColor: "rgba(255, 250, 50, 1)",
+        shadowBlur: 20,
+        max: 10,
+        size: 30,
+        label: {
+          show: true,
+          fillStyle: "white"
+        },
+        globalAlpha: 0.5,
+        gradient: {
+          0.25: "rgb(0,0,255)",
+          0.55: "rgb(0,255,0)",
+          0.85: "yellow",
+          1.0: "rgb(255,0,0)"
+        },
+        draw: this.maptype
+      };
+      const mapvLayer = new MaptalksLayer("data", dataSet, options)
+        .setMask(mask)
+        .addTo(this.map);
+    },
+    initExtrudePolygonLayer() {
+      var jiexiang17 = new maptalks.MultiPolygon(
+        this.features.map(e => e.geometry.coordinates[0]),
+        {
+          visible: true,
+          editable: true,
+          cursor: null,
+          shadowBlur: 0,
+          shadowColor: "black",
+          draggable: false,
+          dragShadow: false, // display a shadow during dragging
+          drawOnAxis: null, // force dragging stick on a axis, can be: x, y
+          symbol: {
+            lineColor: "#ff0",
+            lineWidth: 2,
+            polygonFill: "rgb(135,196,240)",
+            polygonOpacity: 0.6
+          }
+        }
+      );
+
+      const jiexiang = new maptalks.VectorLayer("jiexiang", jiexiang17).addTo(
+        this.map
+      );
+
+      const vector = new VectorLayer("number", {
+        enableAltitude: true,
+        altitudeProperty: "altitude"
+      });
+      const geometryForjiexiang = GeoJSON.toGeometry(this.features);
+      const centerForjiexiang = geometryForjiexiang.map(e => {
+        var height = Math.floor(Math.random() * 1000);
+        var text = new Marker(Coordinate.toNumberArrays(e.getCenter()), {
+          properties: {
+            name: height,
+            altitude: height + 20
+          },
+          symbol: {
+            textFaceName: "sans-serif",
+            textName: "{name}", //value from name in geometry's properties
+            textWeight: "normal", //'bold', 'bolder'
+            textStyle: "normal", //'italic', 'oblique'
+            textSize: 20,
+            textFont: null, //same as CanvasRenderingContext2D.font, override textName, textWeight and textStyle
+            textFill: "#34495e",
+            textOpacity: 1,
+            textHaloFill: "#fff",
+            textHaloRadius: 3,
+            textWrapWidth: null,
+            textWrapCharacter: "\n",
+            textLineSpacing: 0,
+
+            textDx: 0,
+            textDy: 0,
+
+            textHorizontalAlignment: "middle", //left | middle | right | auto
+            textVerticalAlignment: "middle", // top | middle | bottom | auto
+            textAlign: "center" //left | right | center | auto
+          }
+        }).addTo(vector);
+        return new Circle(Coordinate.toNumberArrays(e.getCenter()), 200, {
+          properties: { height: height }
+        });
+      });
+      const v = new VectorLayer("circle", centerForjiexiang).addTo(this.map);
+      const geoCircle = v.getGeometries().map(e => e.toGeoJSON());
+      const buildingLayer = new ExtrudePolygonLayer(
+        "extrudePolygonLayer",
+        geoCircle,
+        {
+          forceRenderOnMoving: true,
+          ambientLight: [0, 0, 0]
+        }
+      )
+        .setStyle([{ filter: true, symbol: { polygonFill: "#0ff" } }])
+        .addTo(this.map);
+      vector.addTo(this.map);
+    },
+    clearData() {
+      this.map.getLayer("data") && this.map.removeLayer("data");
+      this.map.getLayer("number") && this.map.removeLayer("number");
+      this.map.getLayer("circle") && this.map.removeLayer("circle");
+      this.map.getLayer("jiexiang") && this.map.removeLayer("jiexiang");
+      this.map.getLayer("extrudePolygonLayer") &&
+        this.map.removeLayer("extrudePolygonLayer");
+      this.map.removeLayer(
+        this.map
+          .getLayers(e => e.getId().indexOf("data") > -1)
+          .map(e => e.getId())
+      );
+    }
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+}
+</style>

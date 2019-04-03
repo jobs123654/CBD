@@ -1,0 +1,178 @@
+<template>
+<div :class="$style.root"></div>
+</template>
+
+<script>
+    export default {
+        name: "AssetSizeZB",
+        props:{
+
+        },
+        data:function(){
+            return{
+                myChart:null,
+                option:{
+                    textStyle: {
+                        color: '#fffbff'
+                    },
+                    color: ['#3398DB'],
+
+                    title: {
+                        text: 'CBD功能区历年资产规模在朝阳区的占比（%）',
+                        textStyle: {
+                            color: '#fffdff',
+                            fontSize: 18,
+                            fontFamily: 'Microsoft YaHei',
+                            fontWeight: 'lighter',
+                        },
+                        top: 20,
+                        left: 20,
+                    },
+
+                    grid: {
+                        top: '25%',
+                        left: '3%',
+                        right: '5%',
+                        bottom: '15%',
+                        containLabel: true,
+                    },
+                    "legend": {
+
+                        textStyle: {
+                            color: '#fffbff',
+                        },
+                        itemGap: 50,
+                        "data": ['CBD功能区', '朝阳区'],
+                        bottom: '4%',
+                    },
+
+
+                    "calculable": true,
+                    "xAxis": [{
+                        "type": "category",
+                        axisLine: {
+                            show: true,
+                            lineStyle: {
+                                color: '#49c2dc'
+                            }
+                        },
+                        "splitLine": {
+                            "show": false
+                        },
+                        "axisTick": {
+                            "show": false
+                        },
+                        "splitArea": {
+                            "show": false
+                        },
+                        axisLabel: { //坐标轴刻度标签的相关设置
+                            textStyle: {
+                                color: '#fffbff',
+                                margin: 15,
+                            },
+                        },
+                        "data": ['2015年', '2016年', '2017年', '2018年'],
+                    }],
+                    "yAxis": [{
+                        "type": "value",
+                        "splitLine": {
+                            "show": false
+                        },
+                        axisLine: {
+                            show: true,
+                            lineStyle: {
+                                color: '#49c2dc'
+                            }
+                        },
+                        "axisTick": {
+                            "show": false
+                        },
+                        axisLabel: { //坐标轴刻度标签的相关设置
+                            textStyle: {
+                                color: '#fffbff',
+                                margin: 15,
+
+                            },
+                            formatter: '{value}'
+                        },
+                        "splitArea": {
+                            "show": false
+                        },
+
+
+                    }],
+
+                    "series": [
+                        {
+                        "name": "朝阳区",
+                        "type": "bar",
+                        "stack": "总量",
+                        "barMaxWidth": 35,
+                        "barGap": "10%",
+                        "itemStyle": {
+                            "normal": {
+                                "color": "rgba(255,144,128,1)",
+
+                            }
+                        },
+                        "data": [
+                            527,
+                            676,
+                            707,
+                            790,
+                        ],
+                    },
+                        {
+                            "name": "CBD功能区",
+                            "type": "bar",
+                            "stack": "总量",
+                            "itemStyle": {
+                                "normal": {
+                                    "color": "rgba(0,191,183,1)",
+                                    "barBorderRadius": 0,
+
+                                }
+                            },
+                            "data": [
+                                527,
+                                676,
+                                707,
+                                790,
+
+                            ]
+                        },
+                    ]
+                }
+            }
+        },
+        mounted() {
+
+            this.myChart=echarts.init(this.$el)
+            this.myChart.setOption(this.option);
+        },
+        methods:{
+            init:function(title,v){
+                this.option.title.text=title;
+
+                let xs=[],ys=[], that=this;
+                this.option.title.text=title;
+                v.forEach(function (e,i) {
+                    xs.push(e[0])//获取年份
+                    ys.push(e[1]);
+                })
+                that.option.series[1].data=ys;
+                this.option.xAxis.data=xs;
+
+                this.myChart.setOption(this.option);
+            },
+
+        }
+    }
+</script>
+<style lang="scss" module>
+    .root {
+        width: 100%;
+        height: 100%;
+
+    }
+</style>

@@ -1,0 +1,44 @@
+<template>
+  <div :class="$style.root">
+    <div :class="$style.item" v-for="(item,i) in list" :key="i" @click="showThirdList(i)">
+      <span>{{item.name}}</span>
+      <div v-for="(type,j) in item.children" :key="j" v-show="i===itemIndex">
+        <span>{{type.name}}</span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    list: Array
+  },
+  data() {
+    return {
+      itemIndex: -1
+    };
+  },
+  watch: {
+    list() {
+      this.itemIndex = -1;
+    }
+  },
+  methods: {
+    showThirdList(i) {
+      this.itemIndex = i;
+    }
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  margin: 0.1rem;
+  .item {
+    padding: 0.1rem;
+    background: #295c87;
+    color: #ffffff;
+  }
+}
+</style>

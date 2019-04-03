@@ -1,0 +1,159 @@
+<template>
+  <div v-show="infoBoxShow">
+    <div class="re-open" v-show="!isShow" @click="hideInfoBox">
+      <img src="../../assets/images/恢复.png" alt="打开面板" title="打开面板">
+    </div>
+    <div id="info-box" v-show="isShow">
+      <div class="icon-group">
+        <img src="../../assets/images/缩小.png" alt="收起" title="收起" @click="hideInfoBox">
+        <img src="../../assets/images/关闭.png" alt="关闭" title="关闭" @click="closeInfoBox">
+      </div>
+      <div class="title">{{infoData.title}}</div>
+      <div class="content">
+        <Tabs type="card" ref='tabs' >
+          <TabPane :label="tab.label" v-for="(tab, i) in infoData.data" :key="i">
+            <div class="content-table">
+              <table>
+                <tr v-for="(row, index) in tab.props" :key="index">
+                  <td>{{index}}</td>
+                  <td @click="showInfo(index,row)">{{row}}</td>
+                </tr>
+              </table>
+            </div>
+          </TabPane>
+        </Tabs>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      // 传入数据格式
+      mock: {
+        title: "",
+        data: [
+          {
+            label: "",
+            props: {}
+          }
+        ]
+      },
+      isShow: true,
+      infoBoxShow: true,
+      tabsIndex:1
+    };
+  },
+  props: {
+    infoData: Object
+  },
+  watch: {
+    infoData(val, oldVal) {
+      this.infoBoxShow = true;
+      this.tabsIndex = 0
+    }
+  },
+  methods: {
+    hideInfoBox() {
+      this.isShow = !this.isShow;
+    },
+    closeInfoBox() {
+      this.infoBoxShow = false;
+    },
+    showInfo(name,x){
+      if(x.indexOf('企业详情')>-1){
+        this.$store.dispatch("getQYInfo",name)
+      }else if( x.indexOf('楼宇详情')>-1){
+      } 
+
+    }
+  }
+};
+</script>
+
+<style lang='scss' scoped>
+.re-open {
+  position: relative;
+  bottom: 3rem;
+  left: 0.2rem;
+  cursor: pointer;
+}
+#info-box {
+  position: relative;
+  bottom: 3rem;
+  left: 0.2rem;
+  background: url("../../assets/images/面板补充.png");
+  width: 654px;
+  height: 276px;
+  color: #fff;
+  font-size: 14px;
+  .icon-group {
+    position: absolute;
+    top: 28px;
+    right: 12px;
+    img {
+      margin-right: 5px;
+      cursor: pointer;
+    }
+  }
+  .title {
+    margin-left: 25px;
+    padding: 7px 0 1px 0;
+    border-bottom: 1px solid #01a2f3;
+    border-bottom-width: 2px;
+    width: 70px;
+  }
+  .content {
+    width: 618px;
+    height: 221px;
+    margin: 11px 9px 0 24px;
+    .content-table {
+      width: 100%;
+      height: 170px;
+      overflow: auto;
+      table {
+        color: #01a2f3;
+        width: 100%;
+        tr {
+          width: 100%;
+          height: 38px;
+        }
+        td {
+          width: 50%;
+        }
+      }
+    }
+    .content-table::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .content-table::-webkit-scrollbar-thumb {
+      border-radius: 5px;
+      -webkit-box-shabow: inset 0 0 5px rgba(56, 134, 210, 0.2);
+      background: rgba(56, 134, 210, 0.8);
+    }
+    .content-table::-webkit-scrollbar-track {
+      -webkit-box-shabow: inset 0 0 5px rgba(56, 134, 210, 0.2);
+      border-radius: 5px;
+      background: rgba(56, 134, 210, 0.4);
+    }
+  }
+}
+</style>
+<style>
+.content > .ivu-tabs.ivu-tabs-card > .ivu-tabs-bar .ivu-tabs-tab {
+  background: #1c3c57;
+  color: #fff;
+  border-radius: 0;
+  border: 1px solid #01a2f3;
+  border-bottom: 0;
+}
+.content > .ivu-tabs.ivu-tabs-card > .ivu-tabs-bar .ivu-tabs-tab-active {
+  color: #01a2f3;
+}
+.content > .ivu-tabs.ivu-tabs-card > .ivu-tabs-bar {
+  border-bottom: 1px solid #01a2f3;
+}
+</style>

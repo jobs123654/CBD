@@ -1,0 +1,41 @@
+<template>
+  <div :class="$style.root">
+    <div :class="$style.item" @click="setMask(0)" style="width:100%;">CBD功能区</div>
+    <div
+      :class="$style.item"
+      v-for="(item,i) in streets"
+      :key="i"
+      @click="setMask(item)"
+    >{{ item.properties['简称'] }}</div>
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    streets: Array
+  },
+  methods: {
+    setMask(item) {
+      this.$emit("setMask", item);
+    }
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  display: flex;
+  flex-flow: wrap;
+  width: 3rem;
+  background: url(../../assets/images/地名背景.png) center/100% 100%;
+  padding: 0.1rem;
+  font-size: 14px;
+
+  .item {
+    margin: 0.1rem;
+    color: #f5f9ff;
+    cursor: pointer;
+  }
+}
+</style>

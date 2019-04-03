@@ -1,0 +1,41 @@
+<template>
+  <!--底图切换-->
+  <div class="root">
+    <button @click="LoadBaseLayer">二维地图</button>
+    <button @click="LoadImgLayer">影像地图</button>
+    <button @click="LoadTdLayer">三维地图</button>
+    <button @click="tt">二三维</button>
+  </div>
+</template>
+
+<script>
+export default {
+  methods: {
+    /*切换为二维地图*/
+    LoadBaseLayer: function() {
+      this.$emit("tabMap", 0);
+    },
+    /*切换为影像地图*/
+    LoadImgLayer: function() {
+      this.$emit("tabMap", 1);
+    },
+    /*切换为三维地图*/
+    LoadTdLayer: function() {
+      this.$emit("tabMap", 2);
+    },
+    /*二三维地图联动*/
+    tt: function() {
+      this.$emit("tabMap", 3);
+    }
+  }
+};
+</script>
+
+<style  lang="scss" scoped>
+.root {
+  position: absolute;
+  right: 7%;
+  bottom: 10%;
+  z-index: 9;
+}
+</style>

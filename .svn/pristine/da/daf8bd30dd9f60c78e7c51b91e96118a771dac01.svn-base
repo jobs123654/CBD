@@ -1,0 +1,52 @@
+<template>
+  <div :class="$style.root">
+    <div :class="$style.item" @click="toggleStreetMenu()">
+      <img src="../../assets/images/地标.png" style="vertical-align: middle">
+      {{ boundary.properties["简称"] }}
+    </div>
+    <!-- <div :class="$style.item" @click="areagrid">区划网格</div> -->
+    <div :class="$style.item" @click="toggleMaptype()">地图类型</div>
+    <div :class="$style.item" @click="toolbox">
+      <img src="../../assets/images/工具箱.png" style="vertical-align: middle">工具箱
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    boundary: Object
+  },
+  methods: {
+    /*区域网格*/
+    areagrid: function() {
+      this.$emit("toolbar", 1);
+    },
+    toggleStreetMenu() {
+      this.$emit("toolbar", 0);
+    },
+    /*工具箱*/
+    toolbox: function() {
+      this.$emit("toolbar", 2);
+    },
+    toggleMaptype() {
+      this.$emit("toolbar", 3);
+    }
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  background: url(../../assets/images/工具背景.png) center/100% 100%;
+  color: #ffffff;
+  display: flex;
+  font-size: 0.14rem;
+  .item {
+    padding: 0 0.2rem;
+    line-height: 0.4rem;
+    background: url(../../assets/images/面板间隔.png) right/1px 80% no-repeat;
+    cursor: pointer;
+  }
+}
+</style>

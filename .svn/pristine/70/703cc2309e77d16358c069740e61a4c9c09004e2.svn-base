@@ -1,0 +1,89 @@
+<template>
+  <div class="search-root">
+    <div class="title">
+      高级查询
+      <Icon type="ios-close-circle-outline" title="关闭"/>
+    </div>
+    <div class="content">
+      <div class="radio">
+        查询数据
+        <RadioGroup v-model="queryData">
+          <Radio label="楼宇"></Radio>
+          <Radio label="企业"></Radio>
+        </RadioGroup>
+      </div>
+      <div class="radio">
+        查询方式
+        <RadioGroup v-model="queryFun">
+          <Radio label="属性查询"></Radio>
+          <Radio label="空间查询"></Radio>
+        </RadioGroup>
+      </div>
+      <div class="query queryInput" v-if="queryFun == '属性查询'">
+        <Input search enter-button v-model="sqlname" placeholder="输入查询名称" style="width: 200px" size="small" />
+      </div>
+      <div class="query" v-else>
+        <Button icon="md-square-outline" size="small">矩形</Button>
+        <Button icon="md-radio-button-off" size="small">圆形</Button>
+        <Button icon="md-crop" size="small">多边形</Button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "MapSearch",
+  data() {
+    return {
+      queryData: "楼宇",
+      queryFun: "属性查询",
+      sqlname: ""
+    };
+  },
+  components: {},
+  computed: {},
+  mounted() {},
+  beforeDestroy() {},
+  methods: {}
+};
+</script>
+
+<style lang='scss' scoped>
+.search-root {
+  width: 240px;
+  height: 160px;
+  background: #2e4c68;
+  color: #fff;
+  border: 1px solid #028ccf;
+  .title {
+    padding: 5px 10px;
+    border-bottom: 1px solid #fff;
+    .ivu-icon-ios-close-circle-outline {
+      font-size: 20px;
+      float: right;
+      margin-top: 1px;
+      cursor: pointer;
+    }
+  }
+  .content {
+    padding: 0px 10px;
+    font-size: 14px;
+    .radio {
+      height: 35px;
+      line-height: 35px;
+    }
+    .query {
+      height: 40px;
+      line-height: 40px;
+      button {
+        margin-left: 5px;
+      }
+    }
+    .queryInput{
+      margin-top: 7px;
+      margin-left: 2px;
+    }
+  }
+}
+</style>

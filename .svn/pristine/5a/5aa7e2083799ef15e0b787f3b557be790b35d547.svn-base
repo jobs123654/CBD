@@ -1,0 +1,1110 @@
+// eslint-disable-next-line no-undef
+config = {
+  title: "CBD区域楼宇/企业展示分析系统",
+  map: {
+    center: [508925.06, 305125.97],
+    zoom: 7,
+    spatialReference: {
+      projection: "identity",
+      resolutions: [
+        140.00000000000003,
+        70.00000000000001,
+        28.0,
+        14.0,
+        7.0,
+        2.8000000000000003,
+        1.4000000000000001,
+        0.5600000000000002
+      ],
+      fullExtent: {
+        top: 328267.01403450756,
+        left: 498274.8324539737,
+        bottom: 292043.1403319263,
+        right: 534368.7214544317
+      }
+    },
+    attribution: false
+  },
+  baseLayer: {
+    urlTemplate:
+      "http://192.168.46.30:8090/iserver/services/map-Map/wmts100/朝阳区矢量地图/default/Custom_朝阳区矢量地图/{z}/{y}/{x}.png",
+    repeatWorld: false,
+    tileSystem: [1, -1, 498274.8324539737, 328267.01403450756]
+  },
+  /*影像图*/
+  imgLayer: {
+    urlTemplate:
+      "http://192.168.46.30:8090/iserver/services/map-Map/wmts100/朝阳区影像地图/default/Custom_朝阳区影像地图/{z}/{y}/{x}.png",
+    tileSystem: [1, -1, 493348.00833995664, 333299.3163286119]
+  },
+  /*三维图*/
+  threeDimensional: {
+    option: {
+      animation: false, //动画控制不显示
+      baseLayerPicker: false, //图层控制显示
+      geocoder: false, //地名查找不显示
+      timeline: false, //时间线不显示
+      sceneModePicker: false, //投影方式显示
+      navigation: false,
+      selectionIndicator: false,
+      infoBox: false,
+      // eslint-disable-next-line no-undef
+      sceneMode: Cesium.SceneMode.COLUMBUS_VIEW // 哥伦布视图
+    },
+    url:
+      "http://192.168.46.228:8090/iserver/services/3D-CBDMODEL/rest/realspace",
+    map_url:
+      "http://192.168.46.228:8090/iserver/services/map-CBDMAP/rest/maps/%E4%B8%89%E7%BB%B4%E5%BA%95%E5%9B%BE",
+    center: {
+      x: 508925.06,
+      y: 305125.97,
+      z: 1000
+    }
+  },
+  resourceList: [
+    {
+      name: "综合分析",
+      children: [
+        {
+          name: "楼宇数量"
+        },
+        {
+          name: "企业数量"
+        },
+        {
+          name: "行业占比"
+        },
+        {
+          name: "税收收入"
+        },
+        {
+          name: "税收增幅"
+        },
+        {
+          name: "区级收入"
+        }
+      ]
+    },
+    {
+      name: "楼宇分析",
+      map_url:
+        "http://192.168.46.228:8090/iserver/services/map-CBDALL/rest/maps/%E6%A5%BC%E5%AE%87%E7%82%B9",
+      scene_url:
+        "http://192.168.46.228:8090/iserver/services/map-CBDALL/rest/maps/%E6%A5%BC%E5%AE%87%E9%9D%A2",
+      foreignTableName: "PPCHANGEDATA", // 外部表的名称
+      pro_name: "PROJECTNAME", // 外部表楼宇名称
+      park_name: "PARKNAME", // 外部表园区名称
+      other_pro_name: "楼宇名称", // 楼宇空间表名称
+      other_part_name: "楼宇名称", // 园区空间表名称
+      datasource: "CBDGIS", // 数据集
+      map_dataset: "LY_CBD", // 点数据
+      scene_dataset: "LY_C_CBD", // 面数据
+      children: [
+        {
+          name: "楼宇与园区分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "重点楼宇",
+              color: "#DC143C",
+              queryAttributeFilter: "PROJECTTYPE = 0" // 结果过滤条件
+            },
+            {
+              name: "一般楼宇",
+              color: "#19BE6B",
+              queryAttributeFilter: "PROJECTTYPE = 1" // 结果过滤条件
+            },
+            {
+              name: "重点园区",
+              color: "#0000FF",
+              queryAttributeFilter: "PARKTYPE = 0" // 结果过滤条件
+            },
+            {
+              name: "一般园区",
+              color: "#FFFF00",
+              queryAttributeFilter: "PARKTYPE = 1" // 结果过滤条件
+            }
+          ]
+        },
+        {
+          name: "纳税过亿楼宇与园区分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "纳税过亿楼宇",
+              color: "#DC143C",
+              queryAttributeFilter: "TAX > 10000 and PARKTYPE is null" // 结果过滤条件
+            },
+            {
+              name: "纳税过亿园区",
+              color: "#19BE6B",
+              queryAttributeFilter: "TAX > 10000 and PROJECTTYPE is null" // 结果过滤条件
+            }
+          ]
+        },
+        {
+          name: "楼宇与园区价值能力分析",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "楼宇地均产出大于7500万/万平方米",
+              color: "#DC143C",
+              queryAttributeFilter: "TAXPERAREA > 7500 and PARKTYPE is null" // 结果过滤条件
+            },
+            {
+              name: "楼宇地均产出小于7500万/万平方米",
+              color: "#19BE6B",
+              queryAttributeFilter: "TAXPERAREA < 7500 and PARKTYPE is null" // 结果过滤条件
+            },
+            {
+              name: "园区地均产出大于7500万/万平方米",
+              color: "#0000FF",
+              queryAttributeFilter: "TAXPERAREA > 7500 and PROJECTTYPE is null" // 结果过滤条件
+            },
+            {
+              name: "园区地均产出小于7500万/万平方米",
+              color: "#FFFF00",
+              queryAttributeFilter: "TAXPERAREA < 7500 and PROJECTTYPE is null" // 结果过滤条件
+            }
+          ]
+        },
+        {
+          name: "楼宇品质分级分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "超甲级楼宇分布",
+              color: "#DC143C",
+              queryAttributeFilter: "QUALITYRATING = '超甲级'" // 结果过滤条件
+            },
+            {
+              name: "甲级楼宇分布",
+              color: "#19BE6B",
+              queryAttributeFilter: "QUALITYRATING = '甲级'" // 结果过滤条件
+            }
+          ]
+        },
+        {
+          name: "CBD楼宇联盟分布",
+          queryFields: [], // 查询展示字段
+          children: [
+            {
+              name: "楼宇联盟会员单位分布",
+              color: "#DC143C",
+              queryAttributeFilter: "PARKTYPE is null and ISLEAGUE = 1" // 结果过滤条件
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name: "企业分析",
+      children: [
+        {
+          name: "区域企业总体分布",
+          children: [
+            {
+              name: "区域企业总体分布"
+            }
+          ]
+        },
+        {
+          name: "重点企业分布",
+          children: [
+            {
+              name: "重点企业分布"
+            }
+          ]
+        },
+        {
+          name: "企业主体变化分布",
+          children: [
+            {
+              name: "新注册企业分布"
+            },
+            {
+              name: "新迁入企业分布"
+            },
+            {
+              name: "注吊销企业分布"
+            },
+            {
+              name: "迁出企业分布"
+            }
+          ]
+        },
+        {
+          name: "新注册过亿企业分布",
+          children: [
+            {
+              name: "新注册过亿企业分布"
+            }
+          ]
+        },
+        {
+          name: "特色企业分布",
+          children: [
+            {
+              name: "世界500强企业分布"
+            },
+            {
+              name: "上市公司分布"
+            },
+            {
+              name: "独角兽企业分布"
+            },
+            {
+              name: "总部企业分布"
+            },
+            {
+              name: "跨国公司地区总部企业分布"
+            },
+            {
+              name: "外资企业分布"
+            },
+            {
+              name: "功能性企业分布"
+            }
+          ]
+        },
+        {
+          name: "纳税过亿企业分布",
+          children: [
+            {
+              name: "纳税过亿企业分布"
+            }
+          ]
+        },
+        {
+          name: "异地纳税企业分布",
+          children: [
+            {
+              name: "异地纳税企业分布"
+            }
+          ]
+        },
+        {
+          name: "不同行业类型企业分布",
+          children: [
+            {
+              name: "商务和租赁服务业分布"
+            },
+            {
+              name: "金融业分布"
+            },
+            {
+              name: "批发和零售业分布"
+            },
+            {
+              name: "房地产业分布"
+            },
+            {
+              name: "科学研究和技术服务业分布"
+            },
+            {
+              name: "文化、体育和娱乐业分布"
+            },
+            {
+              name: "其他"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name: "信用分析",
+      children: [
+        {
+          name: "高风险企业分布",
+          children: [
+            {
+              name: "高风险企业分布"
+            }
+          ]
+        },
+        {
+          name: "经济异常企业分布",
+          children: [
+            {
+              name: "经济异常企业分布"
+            }
+          ]
+        },
+        {
+          name: "行政处罚企业分布",
+          children: [
+            {
+              name: "行政处罚企业分布"
+            }
+          ]
+        },
+        {
+          name: "黑名单企业分布",
+          children: [
+            {
+              name: "黑名单企业分布"
+            }
+          ]
+        },
+        {
+          name: "红名单企业分布",
+          children: [
+            {
+              name: "红名单企业分布"
+            }
+          ]
+        },
+        {
+          name: "重点监测企业",
+          children: [
+            {
+              name: "重点监测企业"
+            }
+          ]
+        },
+        {
+          name: "瞬时风险企业",
+          children: [
+            {
+              name: "瞬时风险企业"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name: "基础设施"
+    }
+  ],
+  /*区域网格*/
+  AreaGrids: [
+    {
+      id: "功能区街乡",
+      label: "功能区街乡",
+      urlTemplate:
+        "http://192.168.46.30:8090/iserver/services/map-CBD/wmts100/功能区街乡/default/Custom_功能区街乡/{z}/{y}/{x}.png",
+      checked: false,
+      tileSystem: [1, -1, 505764.0597520127, 313551.30006224243]
+    },
+    {
+      id: "CBD东区",
+      label: "CBD东区",
+      urlTemplate:
+        "http://192.168.46.30:8090/iserver/services/map-CBD/wmts100/CBD东区/default/Custom_CBD东区/{z}/{y}/{x}.png",
+      checked: false,
+      tileSystem: [1, -1, 508937.19247180363, 306187.4943991537]
+    },
+    {
+      id: "CBD西区",
+      label: "CBD西区",
+      urlTemplate:
+        "http://192.168.46.30:8090/iserver/services/map-CBD/wmts100/CBD西区/default/Custom_CBD西区/{z}/{y}/{x}.png",
+      checked: false,
+      tileSystem: [1, -1, 507972.4638676255, 306212.6552708135]
+    },
+    {
+      id: "CBD核算范围",
+      label: "CBD核算范围",
+      urlTemplate:
+        "http://192.168.46.30:8090/iserver/services/map-CBD/wmts100/CBD核算范围/default/Custom_CBD核算范围/{z}/{y}/{x}.png",
+      checked: false,
+      tileSystem: [1, -1, 506673.157972172, 306764.1205188399]
+    },
+    {
+      id: "CBD中心区",
+      label: "CBD中心区",
+      urlTemplate:
+        "http://192.168.46.30:8090/iserver/services/map-CBD/wmts100/CBD中心区/default/Custom_CBD中心区/{z}/{y}/{x}.png",
+      checked: false,
+      tileSystem: [1, -1, 507972.4638676255, 306212.6552708135]
+    },
+    {
+      id: "CBD社区",
+      label: "CBD社区",
+      urlTemplate:
+        "http://192.168.46.30:8090/iserver/services/map-CBD/wmts100/CBD社区/default/Custom_CBD社区/{z}/{y}/{x}.png",
+      checked: false,
+      tileSystem: [1, -1, 505760.9899301272, 313523.9609224792]
+    }
+  ],
+
+/*首页图表配置*/
+	chartsOption: [{
+			// 左上
+			textStyle: {
+				color: "#fffdff",
+				fontFamily: 'Microsoft YaHei',
+			},
+
+			title: {
+				text: '北京CBD功能区GDP占比(%)',
+				textStyle: {
+					color: "#fffdff",
+					fontFamily: 'Microsoft YaHei',
+					fontSize: 18,
+					fontWeight: 'lighter',
+
+				},
+				top: 20,
+				left: 20,
+
+			},
+			tooltip: {
+				trigger: 'item',
+				formatter: "{a} <br/>{b}: {c} ({d}%)"
+			},
+			legend: {
+				itemGap: 8,
+				itemHeight: 7,
+				orient: 'vertical',
+				type: 'scroll',
+				right: '15%',
+				top: '50%',
+				align: 'left',
+				data: ['功能区', '其他'],
+				textStyle: {
+					color: '#fffdff',
+					fontSize: 12,
+					fontFamily: 'Microsoft YaHei',
+				}
+			},
+			series: [
+				// 设置成相对的百分比
+
+				{
+					center: ['35%', '56%'],
+					name: '占比',
+					type: 'pie',
+					radius: ['42%', '62%'],
+					avoidLabelOverlap: false,
+					label: {
+						normal: {
+							show: false,
+							position: 'center'
+						},
+						emphasis: {
+							show: false,
+							textStyle: {
+								fontSize: '30',
+								fontWeight: 'bold'
+							}
+						}
+					},
+					labelLine: {
+						normal: {
+							show: false
+						}
+					},
+					data: [{
+							value: 650,
+							name: '功能区',
+							// 设置扇形的颜色
+
+							itemStyle: {
+								// 设置扇形的颜色
+								color: '#49a9f8',
+							}
+						},
+						{
+							value: 335,
+							name: '其他',
+							itemStyle: {
+								// 设置扇形的颜色
+								color: '#f3a53b',
+							}
+						}
+					]
+				}
+			]
+
+		},
+		// 左中
+		{
+
+			title: {
+				text: '北京CBD功能区税收占比（%）',
+				textStyle: {
+					color: '#fffdff',
+					fontSize: 18,
+					fontFamily: 'Microsoft YaHei',
+					fontWeight: 'lighter',
+				},
+				top: 20,
+				left: 20,
+			},
+			tooltip: {
+				trigger: 'item',
+				formatter: "{b}: {c} ({d}%)"
+			},
+			legend: {
+				orient: 'vertical',
+				textStyle: {
+					color: '#fffdff',
+					fontSize: 12,
+					fontFamily: 'Microsoft YaHei',
+				},
+				itemGap: 5,
+				itemHeight: 7,
+				right: '5%',
+				top: '30%',
+				data: ['商务和租赁服务业', '金融业', '批发和零售', '房地产业', '科学研究和技术服务业', '文化、体育和娱乐业', '其他']
+			},
+			series: [{
+				center: ['30%', '61%'],
+				type: 'pie',
+				radius: '70%',
+				avoidLabelOverlap: false,
+				label: {
+					normal: {
+						show: false,
+						position: 'center'
+					},
+				},
+				labelLine: {
+					normal: {
+						show: false
+					}
+				},
+				roseType: 'radius',
+				data: [{
+						value: 335,
+						name: '商务和租赁服务业'
+					},
+					{
+						value: 310,
+						name: '金融业'
+					},
+					{
+						value: 234,
+						name: '批发和零售'
+					},
+					{
+						value: 235,
+						name: '房地产业'
+					},
+					{
+						value: 262,
+						name: '科学研究和技术服务业'
+					},
+					{
+						value: 257,
+						name: '文化、体育和娱乐业'
+					},
+					{
+						value: 286,
+						name: '其他'
+					},
+				]
+			}]
+		},
+		// 左下
+		{
+			textStyle: {
+				color: '#fffbff'
+			},
+			color: ['#3398DB'],
+			title: {
+				text: '北京CBD功能区历年GDP（万元）', // '注册转化漏斗(总体转化率10%)',
+
+				textStyle: {
+					color: '#fffdff',
+					fontSize: 18,
+					fontFamily: 'Microsoft YaHei',
+					fontWeight: 'lighter',
+				},
+				top: 20,
+				left: 20,
+
+			},
+			tooltip: {
+				trigger: 'axis',
+				axisPointer: {
+					type: 'shadow'
+				}
+			},
+			legend: {
+				top: '2%',
+				right: '2%',
+				data: ['2018年', '2017年', '2016年', '2015年'], //['用户数'],
+				textStyle: {
+					color: '#fffdff',
+					fontSize: 12,
+					fontFamily: 'Microsoft YaHei',
+				},
+			},
+			grid: {
+				left: '7%',
+				right: '12%',
+				bottom: '10%',
+				containLabel: true
+			},
+			yAxis: {
+				type: 'value',
+				boundaryGap: false,
+				min:0,
+				max:1000000,
+				splitNumber:5,
+				splitLine: {
+					show: false
+				},
+				axisLine: {
+					show: true,
+					lineStyle: {
+						color: '#49c2dc'
+					}
+				},
+				axisTick: {
+					show: false
+				},
+				axisLabel: {
+					formatter: '{value}'
+				}
+
+			},
+			xAxis: {
+				type: 'category',
+				data: ['2015年', '2016年', '2017年', '2018年'], //['用户数']
+
+				splitLine: {
+					show: false
+				},
+				axisLine: {
+					show: true,
+					lineStyle: {
+						color: '#49c2dc'
+					}
+				},
+				axisTick: {
+					show: false
+				}
+			},
+			series: [{
+				name: 'GDP', //'用户数',
+				type: 'line',
+				symbol: 'circle', // 拐点类型
+				smooth: true,
+				symbolSize: 3, // 拐点圆的大小
+				data: [450000, 530000, 640000, 850000, ]
+			}]
+
+		},
+ 	// 右上
+ 	{
+
+ 		textStyle: {
+ 			color: '#fffbff'
+ 		},
+ 		color: ['#3398DB'],
+ 		title: {
+ 			text: '北京CBD功能区历年税收收入（万元）', // '注册转化漏斗(总体转化率10%)',
+
+ 			textStyle: {
+ 				color: '#fffdff',
+ 				fontSize: 18,
+ 				fontFamily: 'Microsoft YaHei',
+ 				fontWeight: 'lighter',
+ 			},
+ 			top: 20,
+ 			left: 20,
+
+ 		},
+ 		tooltip: {
+ 			trigger: 'axis',
+ 			axisPointer: {
+ 				type: 'shadow'
+ 			}
+ 		},
+ 		legend: {
+ 			data: ['2018年', '2017年', '2016年', '2015年'], //['用户数']
+ 			textStyle: {
+ 				color: '#fffdff',
+ 				fontSize: 12,
+ 				fontFamily: 'Microsoft YaHei',
+ 			},
+ 		},
+ 		grid: {
+ 			left: '4%',
+ 			right: '15%',
+ 			bottom: '10%',
+ 			containLabel: true
+ 		},
+ 		xAxis: {
+ 			type: 'value',
+
+ 			data: [200000, 400000, 600000, 800000, 1000000],
+ 			splitLine: {
+ 				show: true,
+              lineStyle: {
+                // 使用深浅的间隔色
+                color:'rgb(43,38,71)'
+              }
+ 			},
+          axisLine: {
+            lineStyle: {
+              type: 'solid',
+              // color: 'rgb(37,42,84)',
+              width:'2'//坐标线的宽度
+            },
+
+          },
+          axisTick: {
+            show: false,
+          },
+          axisLabel:{
+            align:'3%',
+            fontSize:10,
+
+            formatter: function (value) {
+              // 格式化成月/日，只在第一个刻度显示年份
+              return value;
+            }
+          }
+ 		},
+ 		yAxis: {
+ 			type: 'category',
+ 			data: ['2018年', '2017年', '2016年', '2015年'], //['用户数']
+
+ 			splitLine: {
+ 				show: true,
+              lineStyle: {
+                // 使用深浅的间隔色
+                color:'rgb(43,38,71)'
+              }
+ 			},
+ 			axisTick: {
+ 				show: true,
+
+              alignWithLabel:true,
+              inside:true,
+              length:306,
+              lineStyle:{
+ 				  color:'#474864'
+              }
+ 			},
+           barGap:'10%',
+
+          axisLine: {
+
+            lineStyle: {
+              type: 'solid',
+              // color: 'rgb(37,42,84)',
+              width:'2'//坐标线的宽度
+            }
+          },
+ 		},
+ 		series: [{
+          name: '税收收入',
+ 			barWidth: 10, //设置柱子宽度
+ 			type: 'bar',
+            // nameGap:'10%',
+          // boundaryGap: ['20%', '20%'],
+ 			data: [ 900000,800000, 700000, 600000,],
+          itemStyle: {
+            normal: {
+              color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{
+                offset: 0,
+                color: "#1e66e5" // 0% 处的颜色
+              }, {
+                offset: 0.5,
+                color: "#1c8aea" // 60% 处的颜色
+              }, {
+                offset: 1,
+                color: "#19bcf2" // 100% 处的颜色
+              }], false)
+            }
+          }
+ 		}]
+ 	},
+ 	//右中
+ 	{
+ 		textStyle: {
+ 			color: '#fffbff'
+ 		},
+ 		color: ['#3398DB'],
+ 		title: {
+ 			text: '北京CBD功能区资产规模', // '注册转化漏斗(总体转化率10%)',
+
+ 			textStyle: {
+ 				color: '#fffdff',
+ 				fontSize: 18,
+ 				fontFamily: 'Microsoft YaHei',
+ 				fontWeight: 'lighter',
+ 			},
+ 			top: 20,
+ 			left: 20,
+
+ 		},
+ 		tooltip: {
+ 			trigger: 'axis',
+ 			axisPointer: {
+ 				type: 'shadow'
+ 			}
+ 		},
+ 		legend: {
+ 			data: ['2018年', '2017年', '2016年', '2015年'], //['用户数']
+ 			textStyle: {
+ 				color: '#fffdff',
+ 				fontSize: 12,
+ 				fontFamily: 'Microsoft YaHei',
+ 			},
+ 		},
+ 		grid: {
+ 			left: '7%',
+ 			right: '15%',
+ 			bottom: '10%',
+ 			containLabel: true
+ 		},
+      xAxis: {
+        type: 'value',
+
+        data: [200000, 400000, 600000, 800000, 1000000],
+        splitLine: {
+          show: true,
+          lineStyle: {
+            // 使用深浅的间隔色
+            color:'rgb(43,38,71)'
+          }
+        },
+        axisLine: {
+          lineStyle: {
+            type: 'solid',
+            // color: 'rgb(37,42,84)',
+            width:'2'//坐标线的宽度
+          },
+
+        },
+        axisTick: {
+          show: false,
+        },
+        axisLabel:{
+          align:'3%',
+          fontSize:10,
+
+          formatter: function (value) {
+            // 格式化成月/日，只在第一个刻度显示年份
+            return value;
+          }
+        }
+      },
+      yAxis: {
+        type: 'category',
+        data: ['2018年', '2017年', '2016年', '2015年'], //['用户数']
+
+        splitLine: {
+          show: true,
+          lineStyle: {
+            // 使用深浅的间隔色
+            color:'rgb(43,38,71)'
+          }
+        },
+        axisTick: {
+          show: true,
+
+          alignWithLabel:true,
+          inside:true,
+          length:293,
+          lineStyle:{
+            color:'#474864'
+          }
+        },
+        barGap:'10%',
+
+        axisLine: {
+
+          lineStyle: {
+            type: 'solid',
+            // color: 'rgb(37,42,84)',
+            width:'2'//坐标线的宽度
+          }
+        },
+      },
+ 		series: [{
+ 			name: '资产规模',
+ 			barWidth: 10, //设置柱子宽度
+            barGap:'10%',
+ 			type: 'bar',
+ 			data: [600000, 700000, 800000, 900000],
+          itemStyle: {
+            normal: {
+              color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{
+                offset: 0,
+                color: "#1e66e5" // 0% 处的颜色
+              }, {
+                offset: 0.5,
+                color: "#1c8aea" // 60% 处的颜色
+              }, {
+                offset: 1,
+                color: "#19bcf2" // 100% 处的颜色
+              }], false)
+            }
+          }
+ 		}]
+ 	},
+ 	//右下
+ 	{
+ 		textStyle: {
+ 			color: '#fffbff'
+ 		},
+ 		title: {
+ 			text: '北京CBD功能区历年税收收入（万元）', // '注册转化漏斗(总体转化率10%)',
+ 			textStyle: {
+ 				color: '#fffdff',
+ 				fontSize: 18,
+ 				fontFamily: 'Microsoft YaHei',
+ 				fontWeight: 'lighter',
+ 			},
+ 			top: 20,
+ 			left: 20,
+ 		},
+ 		tooltip: {
+ 			trigger: 'axis',
+ 			backgroundColor: 'rgba(255,255,255,0.7)',
+ 			axisPointer: {
+ 				type: 'shadow'
+ 			},
+ 			formatter: function(params) {
+ 				// for text color
+ 				var color = colorList[params[0].dataIndex];
+ 				var res = '<div style="color:' + color + '">';
+ 				res += '<strong>' + params[0].name + '消费（元）</strong>'
+ 				for (var i = 0, l = params.length; i < l; i++) {
+ 					res += '<br/>' + params[i].seriesName + ' : ' + params[i].value
+ 				}
+ 				res += '</div>';
+ 				return res;
+ 			}
+ 		},
+ 		legend: {
+ 			bottom: '4%',
+ 			textStyle: {
+ 				color: '#fffdff',
+ 				fontSize: 12,
+ 				fontFamily: 'Microsoft YaHei',
+ 			},
+ 			itemGap: 5,
+ 			itemHeight: 7,
+
+
+ 			// data:['1数量','2数量','3数量'],
+
+ 		},
+ 		toolbox: {
+ 			show: false,
+
+ 		},
+ 		calculable: true,
+ 		grid: {
+ 			left: '15%', // 与容器左侧的距离
+ 			top: '25%', // 与容器右侧的距离
+
+ 		},
+ 		xAxis: [{
+ 			boundaryGap: true,
+ 			type: 'category',
+ 			data: [2011, 2012, 2013, 2014, 2015, 2016],
+ 			splitLine: {
+ 				show: true,
+              lineStyle:{
+                color:'#202e5b'
+              }
+ 			},
+ 			axisTick: {
+ 				show: false
+ 			},
+          axisLine: {
+
+            lineStyle: {
+              type: 'solid',
+              color: '#3d829f',
+              width:'2'//坐标线的宽度
+            }
+          },
+ 		}],
+ 		yAxis: [{
+ 			type: 'value',
+ 			splitLine: {
+ 				show: true,
+                lineStyle:{
+ 				  color:'#202e5b'
+                }
+ 			},
+ 			axisTick: {
+ 				show: false
+ 			},
+          axisLine: {
+
+            lineStyle: {
+              type: 'solid',
+              color: '#3d829f',
+              width:'2'//坐标线的宽度
+            }
+          },
+ 		}],
+ 		series: [{
+ 				name: '楼宇数量1',
+ 				type: 'bar',
+ 				itemStyle: {
+ 					normal: {
+ 						color: '#33CCFF',
+ 					}
+ 				},
+ 				data: [4804.7, 1444.3, 1332.1, 908, 871.8, 1983.7]
+ 			},
+ 			{
+ 				name: '楼宇数量2',
+ 				type: 'bar',
+ 				itemStyle: {
+ 					normal: {
+ 						color: '#00FF00',
+ 					}
+ 				},
+ 				data: [4804.7, 1444.3, 1332.1, 908, 871.8, 1983.7]
+ 			},
+ 			{
+ 				name: '楼宇数量3',
+ 				type: 'bar',
+ 				itemStyle: {
+ 					normal: {
+ 						color: '#FF6600',
+ 					}
+ 				},
+ 				data: [4804.7, 1444.3, 1332.1, 908, 871.8, 1983.7]
+ 			},
+
+ 		]
+ 	}
+ ]
+
+
+};
+
+// eslint-disable-next-line no-unused-vars
+const sceneConfig = {
+  // 区域网格-三维
+  zoningGridConfig: [
+    {
+      index: 0,
+      name: "CBD东区",
+      file_name: "DOMAIN_EAST_CBD.json",
+      color: "#FFA500"
+    },
+    {
+      index: 1,
+      name: "CBD西区",
+      file_name: "DOMAIN_WEST_CBD.json",
+      color: "#008000"
+    },
+    {
+      index: 2,
+      name: "CBD中心区",
+      file_name: "DOMAIN_CENTER_CBD.json",
+      color: "#1E90FF"
+    },
+    {
+      index: 3,
+      name: "CBD核心区",
+      file_name: "",
+      color: "#FF0000"
+    }
+  ]
+};

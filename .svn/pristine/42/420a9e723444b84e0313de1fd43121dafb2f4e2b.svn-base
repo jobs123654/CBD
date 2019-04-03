@@ -1,0 +1,92 @@
+<template>
+  <transition name="slide-fade-right">
+    <div :class="$style.root">
+      <div :class="$style.item" @click="toggleStreetMenu()">
+        <img src="../../assets/images/地标.png" style="vertical-align: middle">
+        {{ boundary.properties["简称"] }}
+      </div>
+      <!-- <div :class="$style.item" @click="areagrid">区划网格</div> -->
+      <div :class="$style.item" @click="toggleMaptype()">地图类型</div>
+      <div :class="$style.item" @click="toolbox">
+        <img src="../../assets/images/工具箱.png" style="vertical-align: middle">工具箱
+      </div>
+      <div :class="$style.userback">
+        <div :class="$style.user" title="用户信息" @click="openUserInfo"></div>
+      </div>
+    </div>
+  </transition>
+</template>
+
+<script>
+export default {
+  props: {
+    boundary: Object
+  },
+  methods: {
+    /*区域网格*/
+    areagrid: function() {
+      this.$emit("toolbar", 1);
+    },
+    toggleStreetMenu() {
+      this.$emit("toolbar", 0);
+    },
+    /*工具箱*/
+    toolbox: function() {
+      this.$emit("toolbar", 2);
+    },
+    toggleMaptype() {
+      this.$emit("toolbar", 3);
+    },
+    openUserInfo() {
+      this.$emit("openUser");
+    }
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  background: url(../../assets/images/工具背景.png) center/100% 100%;
+  color: #ffffff;
+  display: flex;
+  font-size: 0.14rem;
+
+  .item {
+    padding: 0 0.2rem;
+    line-height: 0.4rem;
+    background: url(../../assets/images/面板间隔.png) right/1px 80% no-repeat;
+    cursor: pointer;
+  }
+  .userback {
+    position: absolute;
+    background: #2e4c68;
+    right: -51px;
+    width: 48px;
+    height: 34px;
+    margin-top: 3px;
+    .user {
+      width: 48px;
+      height: 38px;
+      background: url(../../assets/images/用户.png);
+      cursor: pointer;
+      margin-top: -2px;
+    }
+    .user:hover {
+      background: url(../../assets/images/用户@.png);
+    }
+  }
+}
+</style>
+<style lang="scss">
+.slide-fade-right-enter-active {
+  transition: all 0.3s ease;
+}
+.slide-fade-right-leave-active {
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+.slide-fade-right-enter, .slide-fade-right-leave-to
+/* .slide-fade-leave-active for below version 2.1.8 */ {
+  transform: translateX(100px);
+  opacity: 0;
+}
+</style>

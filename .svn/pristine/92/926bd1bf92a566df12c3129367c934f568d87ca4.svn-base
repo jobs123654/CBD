@@ -1,0 +1,99 @@
+<template>
+  <transition name="slide-fade-left">
+    <div :class="$style.root" @click="hideSecondMenue">
+      <div :class="$style.item" @click="showGridMenu()">
+        <span>区划网格</span>
+      </div>
+      <div :class="$style.item" v-for="(item,i) in menu" :key="i" @click="showChildrenList(item)">
+        <span>{{item.name}}</span>
+      </div>
+    </div>
+  </transition>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      isShowGrid: true,
+      isdbclick: false
+    };
+  },
+  props: {
+    menu: Array
+  },
+  methods: {
+    showChildrenList(item) {
+      if (this.isdbclick) {
+        this.$store.commit("setCurrentList", {});
+        this.isdbclick = false;
+      } else {
+        this.$store.commit("setCurrentList", item);
+        this.$emit("showGridMenu", false);
+        this.isdbclick = true;
+      }
+    },
+    showGridMenu() {
+      this.$store.commit("setCurrentList", {});
+      this.$emit("showGridMenu", this.isShowGrid);
+      this.isShowGrid = !this.isShowGrid;
+    },
+    //隐藏分析面板
+    hideSecondMenue(){
+       this.$parent.$refs.CBDAnalysis.visible=false;
+    }
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  .item {
+    width: 1.97rem;
+    height: 0.69rem;
+    margin: 0.1rem;
+    font-size: 0.16rem;
+    padding: 0.25rem 0 0 0.8rem;
+    color: #f9feff;
+    opacity: 0.9;
+    cursor: pointer;
+  }
+  .item:nth-child(1) {
+    background: url(../../assets/images/基础设施.png);
+    background-size: 100% 100%;
+  }
+  .item:nth-child(2) {
+    background: url(../../assets/images/综合分析.png);
+    background-size: 100% 100%;
+  }
+  .item:nth-child(3) {
+    background: url(../../assets/images/楼宇分析.png);
+    background-size: 100% 100%;
+  }
+  .item:nth-child(4) {
+    background: url(../../assets/images/企业分析.png);
+    background-size: 100% 100%;
+  }
+  .item:nth-child(5) {
+    background: url(../../assets/images/信用分析.png);
+    background-size: 100% 100%;
+  }
+  .item:nth-child(6) {
+    background: url(../../assets/images/基础设施.png);
+    background-size: 100% 100%;
+  }
+}
+</style>
+<style lang="scss">
+.slide-fade-left-enter-active {
+  transition: all 0.3s ease;
+}
+.slide-fade-left-leave-active {
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+.slide-fade-left-enter, .slide-fade-left-leave-to
+/* .slide-fade-leave-active for below version 2.1.8 */ {
+  transform: translateX(-100px);
+  opacity: 0;
+}
+</style>

@@ -1,0 +1,75 @@
+<template>
+  <div></div>
+</template>
+
+<script>
+export default {
+  name: "GalleryQuery",
+  data() {
+    return {};
+  },
+  components: {},
+  computed: {},
+  mounted() {
+    this.init();
+  },
+  beforeDestroy() {
+    if (scenePickHandler) {
+      scenePickHandler.removeInputAction(
+        this.handleScene,
+        Cesium.ScreenSpaceEventType.LEFT_CLICK
+      );
+      scenePickHandler = scenePickHandler && scenePickHandler.destroy();
+      scenePickHandler = null;
+    }
+  },
+  methods: {
+    init() {
+      if (Viewer) {
+        window.scenePickHandler = new Cesium.ScreenSpaceEventHandler(
+          Viewer.scene.canvas
+        );
+        scenePickHandler.setInputAction(
+          this.handleScene,
+          Cesium.ScreenSpaceEventType.LEFT_CLICK
+        );
+      }
+    },
+    handleScene(e) {
+      let params = config.threeDimensional.gallery;
+      let currentHeight = Viewer.scene.camera.position.z;
+      if (currentHeight < params.height) {
+        let selectLayer = Viewer.scene.layers.getSelectedLayer();
+        let selectModelId = parseInt(selectLayer.getSelection()[0]);
+
+        let joinItem = new SuperMap.JoinItem({
+          foreignTableName: params.foreignTableName,
+          joinFilter: params.joinFilter,
+          joinType: "LEFTJOIN"
+        });
+        let param = new SuperMap.QueryBySQLParameters({
+          datasetNames: params.datasetNames,
+          queryParams: new SuperMap.FilterParameter({
+            name: params.queryParams.name,
+            joinItems: [joinItem],
+            // fields: params.queryParams.fields,
+            attributeFilter: "MODELID = " + selectModelId
+          })
+        });
+
+        L.supermap.queryService(params.url).queryBySQL(param, result => {
+          if (result.type == "processCompleted") {
+            this.$emit(
+              "queryLZdata",
+              result.result.recordsets[0].features.features[0].properties
+            );
+          }
+        });
+      }
+    }
+  }
+};
+</script>
+
+<style lang='scss' scoped>
+</style>

@@ -1,0 +1,231 @@
+<template>
+  <div
+    :class="$style.root"
+    v-show="list.name"
+  >
+    <div :class="$style.title">{{ list.name }}</div>
+    <div
+      v-for="(item, i) in list.children"
+      :key="i"
+    >
+      <span
+        :class="i === itemIndex ? [$style.item, $style.current] : $style.item"
+        @click="showThirdList(i)"
+      >
+        <img
+          src="../../assets/images/point@.png"
+          alt
+          v-if="i === itemIndex"
+        />
+        <img
+          src="../../assets/images/point.png"
+          alt
+          v-else
+        />
+        {{ item.name }}
+      </span>
+      <CheckboxGroup
+        v-model="checkBoxList"
+        @on-change="changeBox"
+      >
+        <div
+          v-for="(type, j) in item.children"
+          :key="j"
+          v-show="i === itemIndex"
+          :class="$style.thirdItem"
+        >
+          <Checkbox
+            :label="type.name"
+            @on-change="checkData(type)"
+          >{{ type.name }}</Checkbox>
+          <span
+            :class="$style.color"
+            v-show="type.color"
+          >
+            <ColorPicker
+              v-model="type.color"
+              alpha
+              size="small"
+              @on-change="selectColor"
+            />
+          </span>
+        </div>
+      </CheckboxGroup>
+
+    </div>
+  </div>
+</template>
+
+<script>
+import { getJX, getLY, getXY, getQY } from "../../api/api.js";
+import { queryService } from "@supermap/iclient-leaflet";
+import {
+  QueryBySQLParameters,
+  FilterParameter,
+  JoinItem
+} from "@supermap/iclient-common";
+
+export default {
+  props: {
+    list: Object
+  },
+  data() {
+    return {
+      itemIndex: -1,
+      checkBoxList: []
+    };
+  },
+  watch: {
+    list() {
+      this.itemIndex = -1;
+    }
+  },
+  methods: {
+    async showThirdList(i) {
+      this.itemIndex = i;
+
+      if (this.list.name == "综合分析") {
+        this.queryJiexiangData();
+        return;
+      }
+
+      this.checkBoxList = [];
+      this.list.children[i].children.map(e => {
+        this.checkBoxList.push(e.name);
+      });
+      this.queryData();
+    },
+    queryData() {
+      let i = this.itemIndex;
+
+      this.$store.commit("clearFeature");
+
+      this.list.children[i].children.map(e => {
+        if (this.checkBoxList.indexOf(e.name) == -1) {
+          return;
+        }
+
+        let joinFilter = "";
+        if (this.list.name === "楼宇分析") {
+          if (e.name.indexOf("园区") > -1) {
+            joinFilter = `${this.list.park_name} = ${this.list.other_pro_name}`;
+          } else {
+            joinFilter = `${this.list.pro_name} = ${this.list.other_pro_name}`;
+          }
+        } else {
+          joinFilter = `${this.list.left_table_id} = ${
+            this.list.right_table_id
+          }`;
+        }
+
+        let foreignTableName = this.list.foreignTableName,
+          datasetNames = [`${this.list.datasource}:${this.list.map_dataset}`],
+          layerName = `${this.list.map_dataset}@${this.list.datasource}`,
+          fields = this.list.children[i].queryFields,
+          attributeFilter = e.queryAttributeFilter,
+          url = this.list.map_url;
+        let joinItem = new JoinItem({
+          foreignTableName: foreignTableName,
+          joinFilter: joinFilter,
+          joinType: "LEFTJOIN"
+        });
+        let param = new QueryBySQLParameters({
+          datasetNames: datasetNames,
+          queryParams: new FilterParameter({
+            name: layerName,
+            joinItems: [joinItem],
+            fields: fields,
+            attributeFilter: attributeFilter
+          })
+        });
+        queryService(url).queryBySQL(param, serviceResult => {
+          if (!serviceResult.result) {
+            return;
+          }
+          let geojson = serviceResult.result.recordsets[0].features;
+          geojson.color = e.color;
+          geojson.name = e.name;
+          this.$store.commit("pushFeature", geojson);
+        });
+      });
+    },
+    queryJiexiangData() {
+      let i = this.itemIndex;
+      this.$store.commit("clearFeature");
+      let joinFilter = `${this.list.left_table_id} = ${
+        this.list.right_table_id
+      }`;
+      let foreignTableName = this.list.foreignTableName,
+        datasetNames = [`${this.list.datasource}:${this.list.map_dataset}`],
+        layerName = `${this.list.map_dataset}@${this.list.datasource}`,
+        fields = this.list.children[i].queryFields,
+        url = this.list.map_url;
+      let joinItem = new JoinItem({
+        foreignTableName: foreignTableName,
+        joinFilter: joinFilter,
+        joinType: "LEFTJOIN"
+      });
+      let param = new QueryBySQLParameters({
+        datasetNames: datasetNames,
+        queryParams: new FilterParameter({
+          name: layerName,
+          joinItems: [joinItem],
+          fields: fields,
+          attributeFilter: "1 = 1"
+        })
+      });
+      queryService(url).queryBySQL(param, serviceResult => {
+        if (!serviceResult.result) {
+          return;
+        }
+        let geojson = serviceResult.result.recordsets[0].features;
+        this.$store.commit("pushFeature", geojson);
+      });
+    },
+    changeBox(item) {
+      this.queryData();
+    },
+    selectColor(color) {
+      this.queryData();
+    }
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  padding: 0.2rem 0;
+  background: url(../../assets/images/面板分解/top.png) top/100% 30px no-repeat,
+    url(../../assets/images/面板分解/未标题-1_06.png) bottom/100% 18px no-repeat,
+    url(../../assets/images/面板分解/1像素.png) 0 30px/100% calc(100% - 48px)
+      no-repeat;
+  color: #f9feff;
+  opacity: 0.9;
+  cursor: pointer;
+  min-width: 2rem;
+  .title {
+    margin-left: 0.2rem;
+    border-bottom: 2px solid #59b3ff;
+    display: inline-block;
+    font-size: 0.13rem;
+  }
+  .current {
+    background: url(../../assets/images/面板分解/选中.png);
+    color: #2d342a;
+  }
+  .item {
+    margin: 0.1rem 0.08rem 0 0.08rem;
+    padding: 0 0.3rem;
+    font-size: 0.13rem;
+    line-height: 0.3rem;
+    display: block;
+  }
+  .thirdItem {
+    font-size: 0.12rem;
+    margin: 0 10px;
+    padding: 5px 0.4rem;
+    line-height: 0.3rem;
+    background: #123a59;
+  }
+}
+</style>

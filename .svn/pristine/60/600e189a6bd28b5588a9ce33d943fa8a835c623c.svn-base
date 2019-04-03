@@ -1,0 +1,378 @@
+// eslint-disable-next-line no-undef
+config = {
+  title: "CBD区域楼宇/企业展示分析系统",
+  map: {
+    center: [508925.06, 305125.97],
+    zoom: 7,
+    spatialReference: {
+      projection: "identity",
+      resolutions: [
+        140.00000000000003,
+        70.00000000000001,
+        28.0,
+        14.0,
+        7.0,
+        2.8000000000000003,
+        1.4000000000000001,
+        0.5600000000000002
+      ],
+      fullExtent: {
+        top: 328267.01403450756,
+        left: 498274.8324539737,
+        bottom: 292043.1403319263,
+        right: 534368.7214544317
+      }
+    },
+    attribution: false
+  },
+  baseLayer: {
+    urlTemplate: "http://192.168.46.30:8090/iserver/services/map-Map/wmts100/朝阳区矢量地图/default/Custom_朝阳区矢量地图/{z}/{y}/{x}.png",
+    repeatWorld: false,
+    tileSystem: [1, -1, 498274.8324539737, 328267.01403450756]
+  },
+  /*影像图*/
+  imgLayer: {
+    urlTemplate: "http://192.168.46.30:8090/iserver/services/map-Map/wmts100/朝阳区影像地图/default/Custom_朝阳区影像地图/{z}/{y}/{x}.png",
+    tileSystem: [1, -1, 493348.00833995664, 333299.3163286119]
+  },
+  /*三维图*/
+  threeDimensional: {
+    option: {
+      animation: false, //动画控制不显示
+      baseLayerPicker: false, //图层控制显示
+      geocoder: false, //地名查找不显示
+      timeline: false, //时间线不显示
+      sceneModePicker: false, //投影方式显示
+      navigation: false,
+      selectionIndicator: false,
+      infoBox: false,
+      // eslint-disable-next-line no-undef
+      sceneMode: Cesium.SceneMode.COLUMBUS_VIEW // 哥伦布视图
+    },
+    url: "http://192.168.46.228:8090/iserver/services/3D-jz/rest/realspace",
+    center: {
+      x: 508925.06,
+      y: 305125.97,
+      z: 1000
+    }
+  },
+  resourceList: [{
+      name: "综合分析",
+      children: [{
+          name: "楼宇数量"
+        },
+        {
+          name: "企业数量"
+        },
+        {
+          name: "行业占比"
+        },
+        {
+          name: "税收收入"
+        },
+        {
+          name: "税收增幅"
+        },
+        {
+          name: "区级收入"
+        }
+      ]
+    },
+    {
+      name: "楼宇分析",
+      children: [{
+          name: "楼宇与园区分布",
+          children: [{
+              name: "重点楼宇",
+              color: "#DC143C"
+            },
+            {
+              name: "一般楼宇",
+              color: "#19BE6B"
+            },
+            {
+              name: "重点园区",
+              color: "#0000FF"
+            },
+            {
+              name: "一般园区",
+              color: "#FFFF00"
+            }
+          ]
+        },
+        {
+          name: "纳税过亿楼宇与园区分布",
+          children: [{
+              name: "纳税过亿楼宇",
+              color: "#DC143C"
+            },
+            {
+              name: "纳税过亿园区",
+              color: "#19BE6B"
+            }
+          ]
+        },
+        {
+          name: "楼宇与园区价值能力分析",
+          children: [{
+              name: "楼宇地均产出大于7500万/万平方米",
+              color: "#DC143C"
+            },
+            {
+              name: "楼宇地均产出小于7500万/万平方米",
+              color: "#19BE6B"
+            },
+            {
+              name: "园区地均产出大于7500万/万平方米",
+              color: "#0000FF"
+            },
+            {
+              name: "园区地均产出小于7500万/万平方米",
+              color: "#FFFF00"
+            }
+          ]
+        },
+        {
+          name: "楼宇品质分级分布",
+          children: [{
+              name: "超甲级楼宇分布",
+              color: "#DC143C"
+            },
+            {
+              name: "甲级楼宇分布",
+              color: "#19BE6B"
+            }
+          ]
+        },
+        {
+          name: "CBD楼宇联盟分布",
+          children: [{
+            name: "楼宇联盟会员单位分布",
+            color: "#DC143C"
+          }]
+        }
+      ]
+    },
+    {
+      name: "企业分析",
+      children: [{
+          name: "区域企业总体分布",
+          children: [{
+            name: "区域企业总体分布"
+          }]
+        },
+        {
+          name: "重点企业分布",
+          children: [{
+            name: "重点企业分布"
+          }]
+        },
+        {
+          name: "企业主体变化分布",
+          children: [{
+              name: "新注册企业分布"
+            },
+            {
+              name: "新迁入企业分布"
+            },
+            {
+              name: "注吊销企业分布"
+            },
+            {
+              name: "迁出企业分布"
+            }
+          ]
+        },
+        {
+          name: "新注册过亿企业分布",
+          children: [{
+            name: "新注册过亿企业分布"
+          }]
+        },
+        {
+          name: "特色企业分布",
+          children: [{
+              name: "世界500强企业分布"
+            },
+            {
+              name: "上市公司分布"
+            },
+            {
+              name: "独角兽企业分布"
+            },
+            {
+              name: "总部企业分布"
+            },
+            {
+              name: "跨国公司地区总部企业分布"
+            },
+            {
+              name: "外资企业分布"
+            },
+            {
+              name: "功能性企业分布"
+            }
+          ]
+        },
+        {
+          name: "纳税过亿企业分布",
+          children: [{
+            name: "纳税过亿企业分布"
+          }]
+        },
+        {
+          name: "异地纳税企业分布",
+          children: [{
+            name: "异地纳税企业分布"
+          }]
+        },
+        {
+          name: "不同行业类型企业分布",
+          children: [{
+              name: "商务和租赁服务业分布"
+            },
+            {
+              name: "金融业分布"
+            },
+            {
+              name: "批发和零售业分布"
+            },
+            {
+              name: "房地产业分布"
+            },
+            {
+              name: "科学研究和技术服务业分布"
+            },
+            {
+              name: "文化、体育和娱乐业分布"
+            },
+            {
+              name: "其他"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name: "信用分析",
+      children: [{
+          name: "高风险企业分布",
+          children: [{
+            name: "高风险企业分布"
+          }]
+        },
+        {
+          name: "经济异常企业分布",
+          children: [{
+            name: "经济异常企业分布"
+          }]
+        },
+        {
+          name: "行政处罚企业分布",
+          children: [{
+            name: "行政处罚企业分布"
+          }]
+        },
+        {
+          name: "黑名单企业分布",
+          children: [{
+            name: "黑名单企业分布"
+          }]
+        },
+        {
+          name: "红名单企业分布",
+          children: [{
+            name: "红名单企业分布"
+          }]
+        },
+        {
+          name: "重点监测企业",
+          children: [{
+            name: "重点监测企业"
+          }]
+        },
+        {
+          name: "瞬时风险企业",
+          children: [{
+            name: "瞬时风险企业"
+          }]
+        }
+      ]
+    },
+    {
+      name: "基础设施"
+    }
+  ],
+  /*区域网格*/
+  AreaGrids: [{
+      id: "功能区街乡",
+      label: "功能区街乡",
+      urlTemplate: "http://192.168.46.30:8090/iserver/services/map-CBD/wmts100/功能区街乡/default/Custom_功能区街乡/{z}/{y}/{x}.png",
+      checked: false,
+      tileSystem: [1, -1, 505764.0597520127, 313551.30006224243]
+    },
+    {
+      id: "CBD东区",
+      label: "CBD东区",
+      urlTemplate: "http://192.168.46.30:8090/iserver/services/map-CBD/wmts100/CBD东区/default/Custom_CBD东区/{z}/{y}/{x}.png",
+      checked: false,
+      tileSystem: [1, -1, 508937.19247180363, 306187.4943991537]
+    },
+    {
+      id: "CBD西区",
+      label: "CBD西区",
+      urlTemplate: "http://192.168.46.30:8090/iserver/services/map-CBD/wmts100/CBD西区/default/Custom_CBD西区/{z}/{y}/{x}.png",
+      checked: false,
+      tileSystem: [1, -1, 507972.4638676255, 306212.6552708135]
+    },
+    {
+      id: "CBD核算范围",
+      label: "CBD核算范围",
+      urlTemplate: "http://192.168.46.30:8090/iserver/services/map-CBD/wmts100/CBD核算范围/default/Custom_CBD核算范围/{z}/{y}/{x}.png",
+      checked: false,
+      tileSystem: [1, -1, 506673.157972172, 306764.1205188399]
+    },
+    {
+      id: "CBD中心区",
+      label: "CBD中心区",
+      urlTemplate: "http://192.168.46.30:8090/iserver/services/map-CBD/wmts100/CBD中心区/default/Custom_CBD中心区/{z}/{y}/{x}.png",
+      checked: false,
+      tileSystem: [1, -1, 507972.4638676255, 306212.6552708135]
+    },
+    {
+      id: "CBD社区",
+      label: "CBD社区",
+      urlTemplate: "http://192.168.46.30:8090/iserver/services/map-CBD/wmts100/CBD社区/default/Custom_CBD社区/{z}/{y}/{x}.png",
+      checked: false,
+      tileSystem: [1, -1, 505760.9899301272, 313523.9609224792]
+    }
+  ]
+};
+
+// eslint-disable-next-line no-unused-vars
+const sceneConfig = {
+  // 区域网格-三维
+  zoningGridConfig: [{
+      index: 0,
+      name: "CBD东区",
+      file_name: "DOMAIN_EAST_CBD.json",
+      color: "#FFA500"
+    },
+    {
+      index: 1,
+      name: "CBD西区",
+      file_name: "DOMAIN_WEST_CBD.json",
+      color: "#008000"
+    }, {
+      index: 2,
+      name: "CBD中心区",
+      file_name: "DOMAIN_CENTER_CBD.json",
+      color: "#1E90FF"
+    }, {
+      index: 3,
+      name: "CBD核心区",
+      file_name: "",
+      color: "#FF0000"
+    }
+  ]
+};

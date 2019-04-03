@@ -1,0 +1,303 @@
+<template>
+	<div :class="$style.root">
+		<Head @enter="enter" :class="$style.head"></Head>
+		<!--left charts-->
+		<div :class="$style.main">
+			<div :class="$style.left">
+
+				<CrystalNum  :class="$style.charts"  ref="CrystalNum" ></CrystalNum>
+				<TaxIncome :class="$style.charts"    ref="TaxIncome" ></TaxIncome>
+				<AssetSize :class="$style.charts"  ref="AssetSize"></AssetSize>
+			</div>
+			<!--map-->
+			<div :class="$style.map">
+
+				<Map :class="$style.mapc" :option="map" v-if="showMap" ref="map" :baseLayer="baseLayer" :boundary="boundary" />
+				<IndexScene :class="$style.scene" v-if="showScene" ref="cesium"></IndexScene>
+			</div>
+
+			<!--right charts-->
+			<div :class="$style.right">
+
+
+				<LiquidFill :class="$style.charts"  ref="LiquidFill"></LiquidFill>
+
+				<TaxIncomeZB :class="$style.charts" ref="TaxIncomeZB"></TaxIncomeZB>
+
+				<!--<TDPie ref="TDPie" :class="$style.charts" v-if="showCenter"></TDPie>-->
+
+				<BuildingNums ref="AssetSizeZB"  :class="$style.charts"></BuildingNums>
+
+			</div>
+		</div>
+		<!--map tool-->
+
+		<TabBtn @reset="reset" :class="$style.tabBtn" @func="func" @center="center"></TabBtn>
+
+		<TabBoundary  :class="$style.maptool" @tabBoundary="tabBoundary" v-if="showMap"></TabBoundary>
+
+		<img :class="$style.dec" src="../../assets/images/首页/装饰.png" alt="">
+
+	</div>
+</template>
+
+<script>
+	import Head from '../home/Head'
+	import Map from '../map/Map'
+
+	import TabBtn from '../toolbar/TabBtn'
+	import TabBoundary from '../toolbar/TabBoundary'
+	import DOMAIN_XJ_CBD from "../../../public/geojson/DOMAIN_XJ_CBD";
+	import DOMAIN_GNQ_CBD from "../../../public/geojson/DOMAIN_GNQ_CBD";
+	import IndexScene from "../realscene/IndexScene";
+	import DOMAIN_CENTER_CBD from "../../../public/geojson/DOMAIN_CENTER_CBD";
+	import BaseCharts from '../home/BaseCharts'
+	import LiquidFill from '../charts/LiquidFill'
+	import CrystalNum from '../charts/CrystalNum'
+	import TaxIncome from '../charts/TaxIncome'
+	import AssetSize from '../charts/AssetSize'
+	import AssetSizeZB from '../charts/AssetSizeZB'
+	import TaxIncomeZB from '../charts/TaxIncomeZB'
+	import BuildingNums from '../charts/BuildingNums'
+
+
+	import {
+		getGDPZB,
+		getGDPIncome,
+		getTaxIncome,
+		getAssetSize,
+		getTaxIncomeZB,
+		getAssetSizeZB,
+	} from '../../api/api'
+
+	export default {
+		name: "Home",
+		components: {
+			Head,
+			Map,
+			TabBtn,
+			BaseCharts,
+			TabBoundary,
+			IndexScene,
+			LiquidFill,
+			CrystalNum,
+			TaxIncome,
+			AssetSize,
+			TaxIncomeZB,
+			BuildingNums,AssetSizeZB
+		},
+		data: function() {
+			return {
+				map: config.indexMap,
+				baseLayer: config.indexBaseLayer,
+				boundary: DOMAIN_GNQ_CBD.features[0],
+				streets: DOMAIN_XJ_CBD.features,
+				showMap: true, //控制二维地图的显示和隐藏
+				showScene: false,
+				threeDimensional: config.threeDimensional,
+				showFun:true,
+				showCenter:false,
+			}
+		},
+		mounted: function() {
+			/*默认加载功能区的数据*/
+
+			this.$refs.map && this.$refs.map.clearMaskLayer();
+
+
+			// this.$refs.CrystalNum.init('CBD功能区历年收入(万元)',['24323','24328','24324']);
+			this.loadData(0)
+
+		},
+		methods: {
+			enter: function() {
+				this.$router.push("/index");
+			},
+			reset:function(i){
+				/*if (i){
+                    this.$refs.CrystalNum.init('CBD中心区历年收入(万元)',['14323','14328','14324']);
+
+                } else{
+                    this.$refs.CrystalNum.init('CBD功能区历年收入(万元)',['24323','14328','14324']);
+                }*/
+			},
+			/*
+			 * 0 功能区
+			 * 1 中心区
+			 *
+			 * */
+			loadData: function(key) {
+				let that = this;
+				// let {gdpIncome,gdpZb,taxIncome,taxZb,assetSize,assetZB}
+				let position=key?'中心':'功能'
+				//GDB收入
+				getGDPIncome(key).then((res) => {
+					res.data.data = that.mySort(res.data.data);
+					that.$refs.CrystalNum.init(`CBD${position}区GDP历年收入(万元)`,that.mySort(res.data.data));
+				});
+				//   GDP占比
+				getGDPZB(key).then(function(res) {
+					that.$refs.LiquidFill.init(`CBD${position}区历年收入占比(%)`,  that.mySort(res.data.data));
+				})
+				// 历年税收收入占比
+				getTaxIncomeZB(key).then((res) => {
+					console.info(res)
+					that.$refs.TaxIncomeZB.init(`CBD${position}区历年税收占比（%）`,that.mySort(res.data.data) );
+				});
+				//历年税收收入
+				 getTaxIncome(key).then((res) => {
+				 	that.$refs.TaxIncome.init(`CBD${position}区GDP历年税收（万元）`,that.mySort(res.data.data) )
+				 });
+				/*历年资产规模*/
+				getAssetSize(key).then((res) => {
+					that.$refs.AssetSize.init(`CBD${position}区资产规模（万元）`,that.mySort(res.data.data) );
+				});
+				/*资产规模占比*/
+				getAssetSizeZB(key).then((res) => {
+					that.$refs.AssetSizeZB.init(`CBD${position}区历年资产规模占比（%）`,that.mySort(res.data.data) );
+				});
+
+
+
+			},
+			/*功能区数据*/
+			func: function() {
+				this.loadData(0);
+
+				this.showMap = true
+				this.showScene = false;
+				let o = this
+				setTimeout(function() {
+					o.$refs.map.clearMaskLayer();
+				}, 100)
+			},
+			/*中心区数据*/
+			center: function() {
+				this.loadData(1);
+				this.showMap = false
+				this.showScene = true;
+			},
+			/*排序*/
+			mySort: function(arr) {
+				return arr.sort((a, b) => Number.parseInt(a[0]) - Number.parseInt(b[0]));
+			},
+			tabBoundary: function(i) {
+				switch (Number.parseInt(i)) {
+					case 0:
+
+						this.$refs.map.boundary = DOMAIN_GNQ_CBD.features[0];
+						this.$refs.map.setMask();
+						break;
+					case 1:
+						this.$refs.map.boundary = DOMAIN_CENTER_CBD.features[0];
+						// this.$refs.map.setMask1();
+						break;
+					case 2:
+						this.$refs.map.clearMaskLayer();
+
+						break;
+				}
+			}
+		}
+	}
+</script>
+
+<style lang="scss" module>
+	.root {
+		height: 900px;
+		overflow: hidden;
+		width: 100%;
+		height: 100%;
+		/*position: relative;*/
+		display: flex;
+		flex-direction: column;
+		background: url('../../assets/images/首页/背景.jpg');
+
+		/*position: relative;*/
+		/*display: flex;*/
+		/*display: flex;
+       width: 100%;
+       height: 100%;*/
+		.head {
+			border: 1px solid black;
+		}
+
+		.dec {
+			height: 6%;
+			width: 100%;
+
+			position: absolute;
+			bottom: 2%;
+			left: 1%;
+		}
+
+		.main {
+			display: flex;
+			width: 100%;
+			height: 94%;
+			margin-top: 0.7%;
+			align-items: center;
+			padding-left: 1%;
+
+			.left,
+			.right {
+
+				height: 99%;
+				width: 24%;
+			}
+
+			.right {
+				margin-left: 1%;
+				margin-right: 1%;
+			}
+
+			.charts {
+				width: 96%;
+				height: 27%;
+				margin: 6% auto;
+				background: url('../../assets/images/首页/面板背景.png') top/100% 100%;
+			}
+
+			.map {
+				position: relative;
+				margin-top: 0%;
+
+				/*position: absolute;*/
+				/*1920*/
+
+				width: 51%;
+				height: 88%;
+				padding-left: 1%;
+
+				.mapc
+				{
+					position: absolute;
+					top: 0.2%;
+					left: 2.6%;
+					width: 97%;
+					height: 99%;
+					/*border: 1px solid red;*/
+					border-bottom-left-radius: 18%;
+				}
+
+
+			}
+		}
+
+		.tabBtn {
+			position: absolute;
+			left: 28%;
+			top: 86%;
+			width: 7%;
+			z-index: 9;
+		}
+
+		.maptool {
+			position: absolute;
+			right:26% ;
+			top: 16%;
+			z-index: 9;
+			/*width: 3%;*/
+		}
+	}
+</style>

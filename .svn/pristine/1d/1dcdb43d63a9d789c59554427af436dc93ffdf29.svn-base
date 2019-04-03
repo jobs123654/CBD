@@ -1,0 +1,37 @@
+import Vue from "vue";
+import Vuex from "vuex";
+
+Vue.use(Vuex);
+export default new Vuex.Store({
+  state: {
+    viewPoint: {
+      x: 512621.78,
+      y: 306055.08,
+      z: 0
+    },
+    zoom: 7,
+    features: [],
+    colorFilter: []
+  },
+  mutations: {
+    change: function (state, value) {
+      state.viewPoint = value;
+    },
+    changeZoom: function (state, value) {
+      state.zoom = value;
+    },
+    setFeatures(state, value) {
+      state.features = value;
+    },
+    pushFeature(state, value) {
+      state.features.push(value);
+    },
+    clearFeature(state) {
+      state.features = [];
+    },
+    setColorFilter(state, value) {
+      state.colorFilter = value;
+    }
+  },
+  actions: {}
+});

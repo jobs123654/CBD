@@ -1,0 +1,288 @@
+<template>
+  <div id="app">
+    <!-- 地图 -->
+    <div :class="$style.container">
+      <Map
+        :class="$style.map"
+        :option="map"
+        v-if="showMap"
+        ref="map"
+        :baseLayer="baseLayer"
+        :boundary="boundary"
+        :maptype="maptype"
+      />
+      <!-- 二三维联动场景 -->
+      <Cesium
+        :class="$style.scene"
+        :option="threeDimensional.option"
+        v-if="showScene"
+        ref="cesium"
+        :url="threeDimensional.url"
+        :center="threeDimensional.center"
+      ></Cesium>
+      <!-- 场景 -->
+      <Scene v-if="showRealScene"></Scene>
+    </div>
+
+    <!-- 标题 -->
+    <Title :class="$style.title" :title="title" @togglePanel="togglePanel"/>
+    <!-- 工具条 -->
+    <ToolBar
+      :class="$style.toolbar"
+      :boundary="boundary"
+      @toolbar="toolbar"
+      v-show="showToolbar && !showRealScene"
+    />
+    <StreetMenu
+      :class="$style.streetmenu"
+      :streets="streets"
+      @setMask="changeBoundary"
+      v-show="showStreetMenu && showToolbar"
+    />
+    <Maptype :class="$style.mapetype" @setMaptype="setMaptype" v-show="showMaptype && showToolbar"/>
+    <!-- 资源目录 -->
+    <ResourceMenu
+      :class="$style.resourceList"
+      :menu="resourceList"
+      @setCurrentList="setCurrentList"
+      v-show="showResourcemenu && !showRealScene"
+    />
+    <SecondMenu :class="$style.secondList" :list="currentItem"/>
+    <!--区域网格-->
+    <GridMenu :list="areagrids" v-show="showAreagrid && showToolbar"></GridMenu>
+    <!--底图切换-->
+    <TabMap @tabMap="tabMap" v-show="showTabmap"></TabMap>
+    <!--地图工具-->
+    <MapTool :class="$style.maptool" v-show="showMaptool && showToolbar"></MapTool>
+    <!--CBD统计分析-->
+    <CBDAnalysis v-show="showCBDAnalysis"></CBDAnalysis>
+  </div>
+</template>
+
+<script>
+// import config from "./config/config";
+import Map from "./components/map/Map";
+import Title from "./components/Title";
+import ToolBar from "./components/toolbar/ToolBar";
+import StreetMenu from "./components/toolbar/StreetMenu";
+import ResourceMenu from "./components/resourceMenu/ResourceMenu";
+import SecondMenu from "./components/resourceMenu/SecondMenu";
+import DOMAIN_XJ_CBD from "./../public/geojson/DOMAIN_XJ_CBD";
+import DOMAIN_GNQ_CBD from "./../public/geojson/DOMAIN_GNQ_CBD";
+import TabMap from "./components/map/TabMap";
+import Cesium from "./components/scene/Cesium";
+import GridMenu from "./components/toolbar/GridMenu";
+import Maptype from "./components/toolbar/Maptype";
+import MapTool from "./components/toolbar/MapTool";
+import Scene from "./components/realscene/Scene";
+import  CBDAnalysis  from './components/analysis/CBDAnalysis'
+export default {
+  name: "app",
+  components: {
+    Map,
+    Title,
+    ToolBar,
+    ResourceMenu,
+    TabMap,
+    Cesium,
+    GridMenu,
+    SecondMenu,
+    StreetMenu,
+    Maptype,
+    MapTool,
+    Scene,
+    CBDAnalysis,
+  },
+  data() {
+    return {
+      map: config.map,
+      baseLayer: config.baseLayer,
+      boundary: DOMAIN_GNQ_CBD.features[0],
+      streets: DOMAIN_XJ_CBD.features,
+      showMap: true, //控制二维地图的显示和隐藏
+      showScene: false,
+      threeDimensional: config.threeDimensional,
+      title: config.title,
+      resourceList: config.resourceList,
+      areagrids: config.AreaGrids, //区域网格配置
+      currentItem: {},
+      showResourcemenu: false,
+      showToolbar: false,
+      showTabmap: false,
+      showStreetMenu: false,
+      showAreagrid: false,
+      showMaptool: false,
+      showMaptype: false,
+      maptype: "point",
+      showRealScene: false,
+      showCBDAnalysis:true,
+    };
+  },
+  mounted() {
+    let that = this;
+    this.$on("toolbar", function(v) {
+      that.toolbar(v);
+    });
+  },
+  methods: {
+    tabMap(i) {
+      switch (i) {
+        case 0:
+          this.showMap = true;
+          this.showScene = false;
+          this.showRealScene = false;
+          this.baseLayer = config.baseLayer;
+          break;
+        case 1:
+          this.showMap = true;
+          this.showScene = false;
+          this.showRealScene = false;
+          this.baseLayer = config.imgLayer;
+          break;
+        case 2:
+          this.showMap = false;
+          this.showRealScene = true;
+          this.showScene = false;
+          break;
+        case 3:
+          this.showMap = true;
+          this.showRealScene = false;
+          this.showScene = true;
+          break;
+      }
+    },
+    /*工具栏*/
+    toolbar(v) {
+      switch (v) {
+        case 0:
+          this.showStreetMenu = !this.showStreetMenu;
+          break;
+        case 1:
+          /*显示区域网格*/
+          this.showAreagrid = !this.showAreagrid;
+          break;
+        case 2:
+          /*显示地图工具*/
+          this.showMaptool = !this.showMaptool;
+          break;
+        case 3:
+          /*显示地图类型*/
+          this.showMaptype = !this.showMaptype;
+          break;
+      }
+    },
+    setCurrentList(currentItem) {
+      this.currentItem = currentItem;
+    },
+    changeBoundary(item) {
+      !item
+        ? (this.boundary = DOMAIN_GNQ_CBD.features[0])
+        : (this.boundary = item);
+    },
+    setMaptype(val) {
+      this.maptype = val;
+    },
+    togglePanel() {
+      if (
+        this.showResourcemenu ||
+        this.showToolbar ||
+        this.showTabmap ||
+        this.showStreetMenu ||
+        this.showAreagrid ||
+        this.showMaptool ||
+        this.showMaptype
+      ) {
+        this.showResourcemenu = false;
+        this.showToolbar = false;
+        this.showTabmap = false;
+        this.showStreetMenu = false;
+        this.showAreagrid = false;
+        this.showMaptool = false;
+        this.showMaptype = false;
+        this.currentItem = {};
+      } else {
+        this.showResourcemenu = true;
+        this.showToolbar = true;
+        this.showTabmap = true;
+      }
+    }
+  }
+};
+</script>
+
+<style lang="scss">
+html {
+  font-size: 100px !important;
+  overflow: hidden;
+}
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+#app {
+  width: 100vw;
+  height: 100vh;
+  font-size: 0.16rem;
+  overflow: hidden;
+}
+</style>
+<style lang="scss" module>
+.container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  .map {
+    flex-grow: 1;
+    width: 50%;
+    height: 100%;
+  }
+  .scene {
+    flex-grow: 1;
+    width: 50%;
+    height: 100%;
+  }
+}
+.title {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+.toolbar {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.1rem;
+  z-index: 1000;
+}
+.streetmenu {
+  position: absolute;
+  top: 1rem;
+  right: 3rem;
+  z-index: 1000;
+}
+.resourceList {
+  position: absolute;
+  top: 0.4rem;
+  left: 0.1rem;
+  z-index: 1000;
+}
+.secondList {
+  position: absolute;
+  top: 0.55rem;
+  left: 2.5rem;
+  z-index: 1000;
+}
+.mapetype {
+  position: absolute;
+  top: 0.8rem;
+  right: 1.2rem;
+  z-index: 1000;
+}
+.maptool {
+  position: absolute;
+  top: 0.97rem;
+  right: 0.1rem;
+  z-index: 1000;
+}
+</style>

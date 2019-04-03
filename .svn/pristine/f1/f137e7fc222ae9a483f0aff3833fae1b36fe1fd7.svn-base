@@ -1,0 +1,198 @@
+<template>
+  <div :class="$style.root">
+
+
+  </div>
+</template>
+
+<script>
+export default {
+  name: "test",
+  data: function() {
+    return {
+      myChart: null,
+      result:[],
+
+      option: {
+        title: {
+          text: "CBD功能区历年收入占比(%)",
+          textStyle: {
+            color: "#fffdff",
+            fontSize: 18,
+            fontFamily: "Microsoft YaHei",
+            fontWeight: "lighter"
+          },
+          top: 20,
+          left: 20
+        },
+
+        series: [
+          {
+            type: "liquidFill",
+            data: [0.6],
+            radius: "50%",
+            // 水球颜色
+            color:['#49d088'],
+            center: ["18%", "56%"],
+            // outline  外边
+            outline: {
+              // show: false
+              borderDistance: 0,
+              itemStyle: {
+                color: "#91E6FF",
+                opacity: 1,
+                borderWidth: 4,
+                borderColor: "#10CDFF"
+              }
+            },
+
+           // 内图 背景色 边
+            backgroundStyle: {
+              color: "rgba(4,24,74,1)"
+              // borderWidth: 5,
+              // borderColor: 'red',
+            }
+          },
+          {
+            type: "liquidFill",
+            data: [0.54],
+            radius: "50%",
+            // 水球颜色
+            color:["#07b7e6"],
+            center: ["50%", "56%"],
+            // outline  外边
+            outline: {
+              // show: false
+              borderDistance: 0,
+              itemStyle: {
+                borderWidth: 4,
+                borderColor: "#10CDFF"
+              }
+            },
+
+            // 内图 背景色 边
+            backgroundStyle: {
+              color: "rgba(4,24,74,1)"
+              // borderWidth: 5,
+              // borderColor: 'red',
+            }
+          },
+          {
+            type: "liquidFill",
+            data: [0.5],
+            radius: "50%",
+            // 水球颜色
+            color: ['#07b7e6'],
+            center: ["82%", "56%"],
+            // outline  外边
+            outline: {
+              // show: false
+              borderDistance: 0,
+              itemStyle: {
+                borderWidth: 4,
+                borderColor: "#10CDFF"
+              }
+            },
+            // 内图 背景色 边
+            backgroundStyle: {
+              color: "rgba(4,24,74,1)"
+              // borderWidth: 5,
+              // borderColor: 'red',
+            }
+          },
+
+        ]
+      },
+      title: "CBD功能区GDP占比(%)"
+      // GDP:54328,
+      // one:0.46,
+      // two:0.54,
+      // three:0.21,
+
+    };
+  },
+  mounted() {
+    this.myChart = echarts.init(this.$el);
+    //使用制定的配置项和数据显示图表
+    this.myChart.setOption(this.option);
+
+  },
+  methods: {
+
+    init:function(title, data) {
+    console.log( this.option.series[2])
+      let xs = [],c=[],
+        t = this;
+      this.option.title.text = title;
+
+      data.forEach(function(e, i) {
+        let n=(Number.parseInt(e[1])/100);
+        t.option.series[i].data[0]=n;
+      });
+
+       // this.option.series[i].data=c;
+      this.height(0)
+      this.reset(1);
+      this.reset(2);
+      this.myChart.setOption(this.option);
+      this.result=data;
+
+    },
+    tab:function(i){
+      this.key=i
+    },
+    active: function(i) {
+      //高亮显示
+      let that=this;
+      //重置
+
+      let c=this.result;
+
+       this.height(i)
+      if (i == 0) {
+        while (++i < 3) {
+          this.reset(i)
+        }
+      } else if (i == 2) {
+        while (--i > -1) {
+          this.reset(i)
+        }
+      } else {
+        this.reset(0)
+        this.reset(2)
+      }
+      this.myChart.setOption(this.option);
+    },
+    height(i){
+      this.option.series[i].color=['#49d088']
+      this.option.series[i].outline.itemStyle.borderColor=  "#28ffb3";
+    },
+    reset(i) {
+      this.option.series[i].outline.itemStyle.borderColor= "#10cdff";
+      this.option.series[i].color=["#07b7e6"]
+    }
+  }
+};
+</script>
+
+<style lang="scss" module>
+  @font-face {
+    font-family: myFirstFont;
+    src: url(../../../public/css/DigitalRegular.ttf);
+    font-weight: bold;
+  }
+.root {
+  width: 100%;
+  height: 100%;
+  .chart{
+    width: 100%;
+    height: 80%;
+  }
+
+  .height{
+    background-color: #0577b4;
+  }.normal{
+       background-color: #4A90E2;
+     }
+}
+</style>

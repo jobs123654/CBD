@@ -1,0 +1,228 @@
+
+<template>
+	<div id="cesiumContainer">
+
+	</div>
+</template>
+<script type="text/javascript">
+
+     let url='http://192.168.105.122:8090/iserver/services/3D-XiCheng/rest/realspace';
+     let viewer=null
+
+     export default {
+     	name:'Webgl',
+     	methods:{
+
+     	},
+     	mounted:function (argument) {
+     			/* body... */
+        /*虚拟地球视图配置*/
+        let options={
+
+          animation:false, //动画控制不显示
+
+          baseLayerPicker:true,//图层控制显示
+
+          geocoder:false,//地名查找不显示
+
+          timeline:false,//时间线不显示
+
+          sceneModePicker:true,//投影方式显示
+          sceneMode: Cesium.SceneMode.COLUMBUS_VIEW
+        };
+        viewer = new Cesium.Viewer('cesiumContainer', options);
+        viewer._cesiumWidget._creditContainer.style.display = 'none'; // 关闭图标
+
+        var scene = viewer.scene;
+        var widget = viewer.cesiumWidget;
+
+
+        try {
+          var promise = scene.open(url);
+
+          Cesium.when.all(promise, function(layers) {
+            /*创建笛卡尔空间坐标*/
+            let b=AppConfig.basePoint;
+            var point = new Cesium.Cartesian3(b.x,b.y,b.z);
+
+            var pointCartographic = scene.camera._projection.unproject(point);
+            //转换至经纬度
+            var pointCX = Cesium.Math.toDegrees(pointCartographic.longitude);
+
+            var pointCY = Cesium.Math.toDegrees(pointCartographic.latitude);
+            //设置相机位置，定位至模型
+            scene.camera.setView({
+              destination: Cesium.Cartesian3.fromDegrees(pointCX, pointCY, pointCartographic.height),
+              orientation: {
+                heading: 0.723822947387097,
+                pitch: -0.45061029898791416,
+                roll: 6.283185307179586
+              }
+            });
+          }, function() {
+            var title = '加载SCP失败，请检查网络连接状态或者url地址是否正确？';
+            widget.showErrorPanel(title, undefined, e);
+          });
+        } catch (e) {
+          if (widget._showRenderLoopErrors) {
+            var title = '渲染时发生错误，已停止渲染。';
+            widget.showErrorPanel(title, undefined, e);
+          }
+        }
+
+
+         let that=this
+        /*拾取坐标*/
+        var handler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
+
+        //设置鼠标左键单击回调事件
+        handler.setInputAction(function(e) {
+          //首先移除之前添加的点
+          viewer.entities.removeAll();
+          //获取点击位置笛卡尔坐标
+          var position = scene.pickPosition(e.position);
+        console.log(position)
+          //
+          //飞行至该位置
+
+          //将笛卡尔坐标转化为经纬度坐标
+          var cartographic = Cesium.Cartographic.fromCartesian(position);
+          var longitude = Cesium.Math.toDegrees(cartographic.longitude);
+          var latitude = Cesium.Math.toDegrees(cartographic.latitude);
+          var height = cartographic.height;
+          if(height < 0) {
+            height = 0;
+          }
+
+
+          /*add 3d*/
+         /* that.add3DBox({
+            x:longitude,
+            y:latitude,
+            z:height
+          })*/
+          //创建弹出框信息
+          var entity = new Cesium.Entity({
+            name : "position",
+            description :'info:'
+          });
+          /*that.flyTo({
+            x:longitude,
+            y:latitude,
+            z:height
+          })*/
+
+
+
+          viewer.selectedEntity = entity;
+
+          //在点击位置添加对应点
+          viewer.entities.add(new Cesium.Entity({
+            point : new Cesium.PointGraphics({
+              color : new Cesium.Color(1, 1, 0),
+              pixelSize : 10,
+              outlineColor : new Cesium.Color(0, 1, 1)
+            }),
+            position : Cesium.Cartesian3.fromDegrees(longitude, latitude , height + 0.5)
+          }));
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+     		    },
+        methods:{
+
+          /*添加图层*/
+          addLayer:function () {
+            /*添加图层*/
+            var my_layer = viewer.scene.imageryLayers.addImageryProvider(
+              new Cesium.UrlTemplateImageryProvider({
+                url : 'http://my_url/{z}/{x}/{y}',
+                format: "image/png"
+              })
+            );
+            //50%透明度
+            my_layer.alpha = 0.5;
+            //两倍亮度
+            my_layer.brightness = 2.0;
+          },
+          /*添加三维模型*/
+          add3DModel:function () {
+            var entity = viewer.entities.add({
+              position : Cesium.Cartesian3.fromDegrees(-123.0744619, 44.0503706),
+              model : { uri : '../Apps/SampleData/models/CesiumGround/Cesium_Ground.gltf'}
+            });
+            viewer.trackedEntity = entity; // 镜头追踪，将镜头固定在对象上
+          },
+          /*添加primitive*/
+          // 'data/Cesium_Ground.gltf'
+          addPrimitives:function (url) {
+            // 这种方式会以最大最小值为缩放边界，采用entity的方式会完全根据地图进行缩放
+            var scene = viewer.scene;
+            var modelMatrix = Cesium.Transforms.eastNorthUpToFixedFrame(Cesium.Cartesian3.fromDegrees(-123.0745725, 44.0503706));
+            var model = scene.primitives.add(Cesium.Model.fromGltf({
+              url: url,
+              //以下这些信息也均可在entity中设置
+              color : Cesium.Color.fromAlpha(Cesium.Color.RED, parseFloat(0.5)),//模型颜色，透明度
+              silhouetteColor : Cesium.Color.fromAlpha(Cesium.Color.GREEN, parseFloat(0.5)),//轮廓线
+              colorBlendMode : Cesium.ColorBlendMode.MIX,//模型样式['Highlight', 'Replace', 'Mix']
+              modelMatrix: modelMatrix,
+              minimumPixelSize : 256, // 最小的缩放尺寸，256个像素，就是一个瓦片的尺寸。
+              maxiumScale: 2 // 最大的缩放倍数
+            }));
+            //添加动画
+            Cesium.when(model.readyPromise).then(function (model) {
+              model.activeAnimations.addAll({
+                loop: Cesium.ModelAnimationLoop.REPEAT,//控制重复
+                speedup: 0.5, // 速度，相对于clock
+                reverse: true // 动画反转
+              })
+            });
+          },
+          /*飞行至某点*/
+          flyTo:function (point) {
+            viewer.camera.flyTo({
+              destination :  Cesium.Cartesian3.fromDegrees(point.x,point.y,point.z), // 设置位置
+              orientation: {
+                heading: 0.723822947387097,
+                pitch: -0.45061029898791416,
+                roll: 6.283185307179586
+              },
+              duration:5, // 设置飞行持续时间，默认会根据距离来计算
+              complete: function () {
+                // 到达位置后执行的回调函数
+                console.log('到达目的地');
+              },
+              cancle: function () {
+                // 如果取消飞行则会调用此函数
+                console.log('飞行取消')
+              },
+             /* pitchAdjustHeight: -90, // 如果摄像机飞越高于该值，则调整俯仰俯仰的俯仰角度，并将地球保持在视口中。
+              maximumHeight:5000, // 相机最大飞行高度
+              flyOverLongitude: 100, // 如果到达目的地有2种方式，设置具体值后会强制选择方向飞过这个经度*/
+            });
+          },
+          /*添加3D图形*/
+          add3DBox:function (point) {
+            var redBox = viewer.entities.add({
+              name : 'Red box with black outline',
+              position: Cesium.Cartesian3.fromDegrees(point.x,point.y,point.z),
+              box : {
+                dimensions : new Cesium.Cartesian3(400.0, 300.0, 500.0),
+                material : Cesium.Color.RED.withAlpha(0.5),
+                // outline : true,
+                // outlineColor : Cesium.Color.BLACK
+              }
+            });
+
+            viewer.zoomTo(viewer.entities);
+          }
+        }
+
+     }
+</script>
+<style  scoped>
+	#cesiumContainer{
+		width: 99%;
+		height:870px;
+		border:1px solid grey;
+	}
+</style>

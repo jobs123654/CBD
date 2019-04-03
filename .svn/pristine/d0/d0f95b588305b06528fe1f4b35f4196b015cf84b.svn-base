@@ -1,0 +1,41 @@
+<template>
+  <div :class="$style.root">
+
+  </div>
+</template>
+
+<script>
+import { Map, TileLayer, Polygon } from "maptalks";
+export default {
+  props: {
+    option: Object,
+    baseLayer: Object,
+    boundary: Object
+  },
+  data() {
+    return {
+      map: {}
+    };
+  },
+  mounted() {
+    let mask = new Polygon(this.boundary.geometry.coordinates);
+    let baseLayer = new TileLayer("baseLayer", this.baseLayer).setMask(mask);
+    this.option.baseLayer = baseLayer;
+    this.map = new Map(this.$el, this.option);
+  },
+  watch:{
+    baseLayer(){
+      let mask = new Polygon(this.boundary.geometry.coordinates);
+      let baseLayer = new TileLayer("baseLayer", this.baseLayer).setMask(mask);
+      this.map.setBaseLayer(baseLayer)
+    }
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  width: 100%;
+  height: 100%;
+}
+</style>

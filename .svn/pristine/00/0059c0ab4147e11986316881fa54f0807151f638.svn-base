@@ -1,0 +1,47 @@
+<template>
+ <div :class="$style.root">
+
+ </div>
+</template>
+
+<script>
+    /*通用版charts组件*/
+
+    import echarts from 'echarts'
+   export default {
+        name: "BaseCharts",
+        props:{
+            option:Object,
+        },
+        data:function () {
+            return{
+
+            }
+        },
+       mounted:function(){
+            this.init();
+       },
+       methods:{
+            init:function () {
+
+                var myChart = echarts.init(this.$el);
+                // 使用刚指定的配置项和数据显示图表。
+                myChart.setOption(this.option );
+
+            },
+           drawPie() {
+               this.pieChart = echarts.init(document.getElementById());
+               this.pieChart.setOption();
+           }
+
+       }
+    }
+</script>
+
+<style lang="scss" module>
+   .root{
+       width:100%;
+       height:100%;
+       border: 1px solid black;
+   }
+</style>

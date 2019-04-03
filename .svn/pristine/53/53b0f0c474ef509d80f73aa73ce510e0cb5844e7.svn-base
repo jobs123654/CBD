@@ -1,0 +1,102 @@
+<template>
+  <div></div>
+</template>
+
+<script>
+export default {
+  name: "GalleryQuery",
+  data() {
+    return {
+      queryBuildInfo: {
+        title: "",
+        data: []
+      }
+    };
+  },
+  components: {},
+  computed: {},
+  mounted() {
+    this.init();
+  },
+  beforeDestroy() {
+    if (scenePickHandler) {
+      scenePickHandler.removeInputAction(
+        this.handleScene,
+        Cesium.ScreenSpaceEventType.LEFT_CLICK
+      );
+      scenePickHandler = scenePickHandler && scenePickHandler.destroy();
+      scenePickHandler = null;
+    }
+  },
+  methods: {
+    init() {
+      if (Viewer) {
+        window.scenePickHandler = new Cesium.ScreenSpaceEventHandler(
+          Viewer.scene.canvas
+        );
+        scenePickHandler.setInputAction(
+          this.handleScene,
+          Cesium.ScreenSpaceEventType.LEFT_CLICK
+        );
+      }
+    },
+    handleScene(e) {
+      let self = this;
+      let params = config.threeDimensional.gallery;
+      let currentHeight = Viewer.scene.camera.position.z;
+      if (currentHeight < params.height) {
+        let selectLayer = Viewer.scene.layers.getSelectedLayer();
+        let selectModelId = parseInt(selectLayer.getSelection()[0]);
+
+        let joinItem = new SuperMap.JoinItem({
+          foreignTableName: params.foreignTableName,
+          joinFilter: params.joinFilter,
+          joinType: "LEFTJOIN"
+        });
+        let param = new SuperMap.QueryBySQLParameters({
+          datasetNames: params.datasetNames,
+          queryParams: new SuperMap.FilterParameter({
+            name: params.queryParams.name,
+            joinItems: [joinItem],
+            // fields: params.queryParams.fields,
+            attributeFilter: "MODELID = " + selectModelId
+          })
+        });
+
+        L.supermap.queryService(params.url).queryBySQL(param, result => {
+          if (result.type == "processCompleted") {
+            self.handleData(result, "楼座信息");
+          }
+        });
+      } else {
+        // TODO 楼宇查询
+      }
+    },
+    handleData(res, title) {
+      if (this.queryBuildInfo.title.length > 0) {
+        this.queryBuildInfo = {
+          title: "",
+          data: []
+        };
+      }
+      this.queryBuildInfo.title = title;
+      if (res.result.recordsets[0].features.features.length > 0) {
+        let properties =
+          res.result.recordsets[0].features.features[0].properties;
+        let data = {
+          label: "空间信息",
+          props: properties
+        };
+        this.queryBuildInfo.data.push(data);
+        this.$emit("queryLZdata", this.queryBuildInfo);
+      } else {
+        this.$Message.error("暂无数据！");
+        this.$emit("queryLZdata", null);
+      }
+    }
+  }
+};
+</script>
+
+<style lang='scss' scoped>
+</style>

@@ -1,0 +1,42 @@
+<template>
+  <div class="link">
+    <LinkMap id="map"></LinkMap>
+    <LinkScene id="scene"></LinkScene>
+  </div>
+</template>
+
+<script>
+import LinkMap from "./LinkMap";
+import LinkScene from "./LinkScene";
+export default {
+  name: "Link",
+  data() {
+    return {};
+  },
+  components: {
+    LinkMap,
+    LinkScene
+  },
+  mounted() {},
+  beforeDestroy() {},
+  methods: {}
+};
+</script>
+
+<style lang='scss' scoped>
+.link {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  #map {
+    flex-grow: 1;
+    width: 50%;
+    height: 100%;
+  }
+  #scene {
+    flex-grow: 1;
+    width: 50%;
+    height: 100%;
+  }
+}
+</style>

@@ -1,0 +1,128 @@
+<template>
+  <div id="cesium-scene"></div>
+</template>
+
+<script>
+export default {
+  name: "IndexScene",
+  data() {
+    return {
+      sceneConfig: config.threeDimensional
+    };
+  },
+  mounted() {
+    this.init();
+    this.$emit("realSceneComplete");
+  },
+  beforeDestroy() {
+    this.destroyScene();
+  },
+  watch: {
+    sceneConfig: {
+      handler(val, oldVal) {
+        this.destroyScene();
+        this.init();
+      },
+      deep: true
+    }
+  },
+  methods: {
+    init() {
+
+
+      let self = this;
+      // this.config.option.terrainProvider = new Cesium.CesiumTerrainProvider({
+      //   url: self.config.dem,
+      //   isSct: true //地形服务源自SuperMap iServer发布时需设置isSct为true
+      // });
+
+      let viewer = new Cesium.Viewer(this.$el, this.sceneConfig.option);
+      window.Viewer = viewer;
+      viewer._cesiumWidget._creditContainer.style.display = "none";
+      //添加SuperMap iServer发布的影像服务
+      viewer.imageryLayers.addImageryProvider(
+        new Cesium.SuperMapImageryProvider({
+          url: self.sceneConfig.map_url
+        })
+      );
+      let scene = viewer.scene;
+      let widget = viewer.cesiumWidget;
+
+      let promise = scene.open(this.sceneConfig.sceneUrl);
+      Cesium.when.all(
+        promise,
+
+        layers => {
+          let style = new Cesium.Style3D();
+          style.bottomAltitude = -39;
+
+          /*layers.forEach(layer => {
+            if (layer.name.indexOf("JZ") == -1) {
+              layer.selectEnabled = false;
+            }
+            layer.style3D = style;
+            layer.refresh();
+          });*/
+
+          var handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+          handler.setInputAction(function (movement) {
+             console.log(scene.camera)
+          }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+         /* let point = new Cesium.Cartesian3(
+            self.sceneConfig.center.x,
+            self.sceneConfig.center.y,
+            self.sceneConfig.center.z
+          );
+*/
+          let position={x: 509999.4353422035, y: 303271.3676363418, z: 1082.1530535491182};
+
+          let point = new Cesium.Cartesian3(
+                 position.x,
+                  position.y,
+                  position.z
+          );
+          let pointCartographic = scene.camera._projection.unproject(point);
+          let pointCX = Cesium.Math.toDegrees(pointCartographic.longitude);
+          let pointCY = Cesium.Math.toDegrees(pointCartographic.latitude);
+
+          // 设置相机位置，定位至模型
+          scene.camera.setView({
+            destination: Cesium.Cartesian3.fromDegrees(
+              pointCX,
+              pointCY,
+              pointCartographic.height
+            ),
+            orientation: {
+              heading: 0,
+              pitch: 100,
+              roll: 0
+            }
+          });
+        },
+        e => {
+          let title = "加载SCP失败，请检查网络连接状态或者url地址是否正确？";
+          widget.showErrorPanel(title, undefined, e);
+        }
+      );
+
+    },
+    destroyScene() {
+      if (window.Viewer) {
+        try {
+          window.Viewer.destroy();
+        } catch (e) {
+          console.error("摧毁viewer失败！");
+          window.Viewer = null;
+        }
+      }
+    }
+  }
+};
+</script>
+<style lang='scss' scoped>
+#cesium-scene {
+  width: 100%;
+  height: 100%;
+}
+</style>

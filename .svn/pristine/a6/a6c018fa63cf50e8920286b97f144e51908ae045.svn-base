@@ -1,0 +1,36 @@
+<template>
+  <div :class="$style.root">
+    <div :class="$style.item" @click="toggleStreetMenu()">{{boundary.properties['简称']}}</div>
+    <div :class="$style.item">区划网格</div>
+    <div :class="$style.item">地图类型</div>
+    <div :class="$style.item">工具箱</div>
+    <div :class="$style.item">用户</div>
+  </div>
+</template>
+
+<script>
+export default {
+  props:{
+    boundary:Object
+  },
+  methods:{
+    toggleStreetMenu(){
+      this.$emit('toggleStreetMenu')
+    }
+  }
+};
+</script>
+
+<style  lang="scss" module>
+.root {
+  background: #213f5b;
+  border: 1px solid #019eea;
+  color: #ffffff;
+  display: flex;
+
+  .item{
+    padding: 0.05rem;
+    border: 1px solid #019eea;
+  }
+}
+</style>

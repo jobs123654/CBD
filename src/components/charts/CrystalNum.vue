@@ -1,0 +1,154 @@
+<template>
+    <div :class="$style.root">
+
+        <div :class="$style.title">
+            {{title}}
+        </div>
+        <div :class="$style.num">
+            <b>共计</b> <span>{{GDP}}</span><b>万元</b>
+        </div>
+        <div :class="$style.time">
+             <ul :class="$style.time_vertical">
+
+                 <li v-for="(e,i) in list" >
+                    <b  @click="select(i)" :class="active===i?$style.height:$style.normal"></b><span></span><a href="javascript:void(0)">{{e[0]}}</a>
+                </li>
+                <!--<li><b  @click="select(1)"  :class="active===1?$style.height:$style.normal"></b><span></span><a href="javascript:void(0)">2017</a></li>
+                <li><b  @click="select(2)"  :class="active===2?$style.height:$style.normal"></b><span></span><a href="javascript:void(0)">2018</a></li>-->
+            </ul>
+            <hr>
+        </div>
+
+    </div>
+</template>
+
+<script>
+    export default {
+        props:{
+
+        },
+        data:function () {
+            return{
+                active:0,
+                title:'CBD功能区历年GDP（万元）',
+                GDP:54328,
+                list:[
+                        ['2016年', '54324'],
+
+                        ['2017年', '54322'],
+
+                        ['2018年', '54325'],],
+                }
+        },
+        mounted() {
+            this.GDP=this.list[0][1];
+
+        },
+        methods:{
+            init:function(title,data){
+                this.title=title;
+                this.list=data;
+                let x=[]
+                this.GDP=this.list[0][1];
+                this.active=0;
+            },
+            select:function (i) {
+                this.GDP=this.list[i][1];
+
+                this.active=i;
+                console.log(i)
+                this.$parent.$refs.LiquidFill.active(i);
+            }
+        }
+    }
+</script>
+<style lang="scss" module>
+    @font-face {
+        font-family: myFirstFont;
+        src: url(../../../public/css/DigitalRegular.ttf);
+        font-weight: bold;
+    }
+    .root {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        // background-color:#3E4857;
+        justify-content: center;
+        color: white;
+
+        .num,.time{
+        /*background-color: #D3D3D3;*/
+           text-align: center;
+         }
+         .time{
+             position: relative;
+             padding-left: 18%;
+             margin-top: 2%;
+             .time_vertical{
+                li{
+                    float: left;
+                    position: relative;
+                    text-align: center;
+                    width: 25%;
+                    padding-top: 10px;
+                    list-style: none;
+                    b {
+                        content: '';
+                        position: absolute;
+                        top: -10px;
+                        left: 41%;
+                        width: 20px;
+                        height: 20px;
+
+                        border-radius: 50%;
+
+                        cursor: pointer;
+                    }
+                    a{
+                        color: white;
+                    }
+
+                }
+
+             }
+             hr{
+                 width: 80%;
+             }
+         }
+
+        .num{
+
+
+            position: relative;
+            span{
+                font-family: 'myFirstFont';
+                font-size: 80px;
+                color: #04f3d3;
+
+            }
+            b{
+                position: absolute;
+                top: 54%;
+            }
+            b:nth-child(1){
+
+                left: 19%;
+
+            }
+            b:nth-child(2){
+                left: 90%;
+            }
+        }
+        .title{
+            padding:2% 7%;
+            font-size: 18px;
+        }
+        .height{
+            background-color: #28ffb3;
+        }
+        .normal{
+            background: #4c4c4c;
+        }
+    }
+</style>

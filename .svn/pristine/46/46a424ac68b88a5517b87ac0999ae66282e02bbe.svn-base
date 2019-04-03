@@ -1,0 +1,171 @@
+<template>
+  <div :class="$style.root"></div>
+</template>
+
+<script>
+export default {
+  name: "AssetSize",
+  data: function() {
+    return {
+      myChart: null,
+      option: {
+        textStyle: {
+          color: "#fffbff"
+        },
+        color: ["#3398DB"],
+        title: {
+          text: "CBD功能区历年资产规模（万元）", // '注册转化漏斗(总体转化率10%)',
+          textStyle: {
+            color: "#fffdff",
+            fontSize: 18,
+            fontFamily: "Microsoft YaHei",
+            fontWeight: "lighter"
+          },
+          top: 20,
+          left: 20
+        },
+
+        grid: {
+          left: "3%",
+          right: "7%",
+          bottom: "6%",
+          containLabel: true
+        },
+
+        xAxis: [
+          {
+            boundaryGap: true,
+            type: "category",
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: "#49c2dc"
+              }
+            },
+            splitLine: {
+              show: false
+            },
+            axisTick: {
+              show: false
+            },
+            splitArea: {
+              show: false
+            },
+            axisLabel: {
+              //坐标轴刻度标签的相关设置
+              textStyle: {
+                color: "#fffbff",
+                margin: 15
+              }
+            },
+            data: ["2015年", "2016年", "2017年", "2018年"]
+          }
+        ],
+        yAxis: [
+          {
+            type: "value",
+            splitLine: {
+              show: false
+            },
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: "#49c2dc"
+              }
+            },
+            axisTick: {
+              show: false
+            },
+            axisLabel: {
+              //坐标轴刻度标签的相关设置
+              textStyle: {
+                color: "#fffbff",
+                margin: 15
+              },
+               formatter:(value) =>value
+            },
+            splitArea: {
+              show: false
+            },
+           
+          }
+        ],
+        series: [
+          {
+            type: "line",
+            smooth: true,
+            symbol: "circle",
+            symbolSize: 5,
+            showSymbol: false,
+
+            lineStyle: {
+              normal: {
+                color: "#28ffb3" // 线条颜色
+              },
+              borderColor: "#f0f"
+            },
+
+            itemStyle: {
+              normal: {
+                color: "#28ffb3"
+              }
+            },
+            areaStyle: {
+              normal: {
+                color: new echarts.graphic.LinearGradient(
+                  0,
+                  0,
+                  0,
+                  1,
+                  [
+                    {
+                      offset: 0,
+                      color: "rgba(0,154,120,1)"
+                    },
+                    {
+                      offset: 1,
+                      color: "rgba(0,0,0, 0)"
+                    }
+                  ],
+                  false
+                ),
+                shadowColor: "rgba(53,142,215, 0.9)", //阴影颜色
+                shadowBlur: 10,
+                label: {
+                  show: true
+                }
+              }
+            },
+
+            data: [145000, 165000, 210000, 263000]
+          }
+        ]
+      }
+    };
+  },
+
+  mounted() {
+    this.myChart = echarts.init(this.$el);
+    this.myChart.setOption(this.option);
+  },
+  methods: {
+    /*
+     * title
+     * v[[name,value]]
+     * */
+    init: function(title, v) {
+      this.option.title.text = title;
+
+      this.option.series[0].data = v;
+
+      this.myChart.setOption(this.option);
+    }
+  }
+};
+</script>
+<style lang="scss" module>
+.root {
+  width: 100%;
+  height: 100%;
+}
+</style>

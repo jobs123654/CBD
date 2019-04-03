@@ -1,0 +1,464 @@
+import Vue from "vue";
+import Vuex from "vuex";
+import {
+  groupWith
+} from "ramda";
+
+Vue.use(Vuex);
+export default new Vuex.Store({
+  state: {
+    viewPoint: {
+      x: 512621.78,
+      y: 306055.08,
+      z: 0
+    },
+    zoom: 7,
+    features: [],
+    colorFilter: [],
+    analysisData: [],
+    analysisDataForEveryJX: [],
+    currentList: {},
+    infoBoxData: {},
+    secondCurrentList: {},
+    buildings: [],
+    isShowBuildings: false,
+
+    mapType: "point",
+    migrateObjDM: {}, //迁徙对象
+    gridArray: []
+  },
+  mutations: {
+    change(state, value) {
+      state.viewPoint = value;
+    },
+    changeZoom(state, value) {
+      state.zoom = value;
+    },
+    setGridArray(state, value) {
+      state.gridArray = value;
+    },
+    addGrid(state, value) {
+      state.gridArray.push(value);
+    },
+    removeGrid(state, value) {
+      if (state.gridArray.length > 0) {
+        state.gridArray.forEach(item => {
+          if (item.id == value.id) {
+            state.gridArray.splice(item, 1);
+          }
+        });
+      }
+    },
+    changeMapViewObj(state, value) {
+      state.mapViewObj = value;
+    },
+    setMaptype(state, value) {
+      state.mapType = value;
+    },
+    setFeatures(state, value) {
+      state.features = value;
+    },
+    pushFeature(state, value) {
+      state.features.push(value);
+    },
+    clearFeature(state) {
+      state.features = [];
+    },
+    setColorFilter(state, value) {
+      state.colorFilter = value;
+    },
+    setAnalysisData(state, value) {
+      state.analysisData = value;
+    },
+    setAnalysisDataForEveryJX(state, value) {
+      state.analysisDataForEveryJX = value;
+    },
+    setCurrentList(state, value) {
+      state.currentList = value;
+    },
+    setInfoBoxData(state, value) {
+      state.infoBoxData = value;
+    },
+    setSecondCurrentList(state, value) {
+      state.secondCurrentList = value;
+    },
+    setBuildings(state, value) {
+      state.buildings = value;
+    },
+    showBuildings(state, value) {
+      state.isShowBuildings = value;
+    },
+    clearBuildings(state) {
+      state.buildings = [];
+    },
+    setMigrateObjDM(state, value) {
+      state.migrateObjDM = value;
+    }
+  },
+  actions: {
+    //配置企业迁徙数据
+    addMigrateObjs(context) {
+      let dm = {
+        color: ["#a6c84c", "#46bee9", "#ffa022"],
+        style: "path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84.662-26.629-121.796-63.961-121.491c-37.332-0.305-64.482,36.829-63.961,121.491l0.073,208.063l-319.9,221.799v89.254l330.343-157.288l12.238,241.308l-134.449,92.931l0.531,42.034l175.125-42.917l175.125,42.917l0.531-42.034l-134.449-92.931l12.238-241.308L1705.06,1318.313z",
+        objs: [
+          [
+            "2018",
+            "北京新曙光企业服务有限公司",
+            "北京市朝阳区国贸建外SOHO西区18号楼27层2",
+            505218.2999999998,
+            315035.24,
+            508523.14,
+            308662.72,
+            95
+          ],
+          [
+            "2018",
+            "北京奥搏健体育场地工程有限公司",
+            "北京市朝阳区黄厂南里3号院12号楼10层1107",
+            521402.2999999998,
+            314587.24,
+            515663.14,
+            299814.72,
+            95
+          ],
+          [
+            "2018",
+            "北京艾尔利达科技有限公司",
+            "北京市朝阳区裕民路12号元辰鑫大厦E1座305室",
+            509496.9800000001,
+            303089.31999999995,
+            512723.14,
+            296286.72,
+            95
+          ],
+          [
+            "2018",
+            "北京凯迅印刷有限公司",
+            "北京市朝阳区慧忠北里315号楼1705",
+            511693.29999999993,
+            309749.4,
+            511323.14,
+            315354.72,
+            95
+          ],
+          [
+            "2018",
+            "北京风华时代环境工程有限公司",
+            "北京市朝阳区洛克时代中心B1211",
+            514284.9800000001,
+            305889.31999999995,
+            508075.14,
+            296496.72,
+            95
+          ],
+          [
+            "2018",
+            "北京极地风家电维修有限公司",
+            "北京市朝阳区京顺路香江北路8号",
+            519750.2999999998,
+            301399.24,
+            512359.14,
+            306590.72,
+            95
+          ]
+        ]
+      };
+      context.commit("setMigrateObjDM", dm);
+    },
+    getAnalysisData(context) {
+      let {
+        left_table_id,
+        right_table_id,
+        map_dataset,
+        datasource,
+        map_url,
+        fields,
+        CLforeignTableName
+      } = config.resourceList[0];
+      let joinFilter = `${left_table_id} = ${right_table_id}`,
+        layerName = `${map_dataset}@${datasource}`,
+        url = map_url;
+
+      let joinItem = new SuperMap.JoinItem({
+        foreignTableName: CLforeignTableName,
+        joinFilter: joinFilter,
+        joinType: "LEFTJOIN"
+      });
+      let param = new SuperMap.QueryBySQLParameters({
+        queryParams: new SuperMap.FilterParameter({
+          name: layerName,
+          joinItems: [joinItem],
+          fields: fields,
+          attributeFilter: "1 = 1"
+        })
+      });
+      L.supermap.queryService(url).queryBySQL(param, serviceResult => {
+        let result = serviceResult.result;
+        if (result.recordsets.length == 0) {
+          return;
+        }
+        let geojson = result.recordsets[0].features;
+
+        let analysisDataForEveryJX = groupWith(
+          (a, b) => a.properties.年份 === b.properties.年份,
+          geojson.features
+        );
+        context.commit("setAnalysisDataForEveryJX", analysisDataForEveryJX);
+
+        let analysisData = geojson.features
+          .map(e => e.properties)
+          .reduce((p, c) => {
+            if (p.map(e => e.year).indexOf(c["年份"]) == -1) {
+              p.push({
+                year: c["年份"],
+                data: JSON.parse(JSON.stringify(c))
+              });
+              return p;
+            } else {
+              let temp = p.filter(e => e.year == c["年份"])[0];
+              temp.data.楼宇数量 =
+                parseFloat(temp.data.楼宇数量) + parseFloat(c.楼宇数量);
+              temp.data.企业数量 =
+                parseFloat(temp.data.企业数量) + parseFloat(c.企业数量);
+              temp.data.商务和租赁服务业 =
+                parseFloat(temp.data.商务和租赁服务业) +
+                parseFloat(c.商务和租赁服务业);
+              temp.data.金融业 =
+                parseFloat(temp.data.金融业) + parseFloat(c.金融业);
+              temp.data.批发零售业 =
+                parseFloat(temp.data.批发零售业) + parseFloat(c.批发零售业);
+              temp.data.房地产业 =
+                parseFloat(temp.data.房地产业) + parseFloat(c.房地产业);
+              temp.data.科技研究和技术服务业 =
+                parseFloat(temp.data.科技研究和技术服务业) +
+                parseFloat(c.科技研究和技术服务业);
+              temp.data.文化体育和娱乐业 =
+                parseFloat(temp.data.文化体育和娱乐业) +
+                parseFloat(c.文化体育和娱乐业);
+              temp.data.其他 = parseFloat(temp.data.其他) + parseFloat(c.其他);
+              temp.data.税收收入 =
+                parseFloat(temp.data.税收收入) + parseFloat(c.税收收入);
+              temp.data.区级收入 =
+                parseFloat(temp.data.区级收入) + parseFloat(c.区级收入);
+              p.filter(e => e.year != c["年份"]).push(temp);
+              return p;
+            }
+          }, [])
+          .sort((a, b) => b.year - a.year);
+        context.commit("setAnalysisData", analysisData);
+      });
+    },
+    clickMap(context, coordnate) {
+      let foreignTableName, layerName, fields, attributeFilter, joinFilter, url;
+      if (context.state.currentList.name == "楼宇分析") {
+        let LYconfig = config.resourceList.filter(e => e.name == "楼宇分析")[0];
+        // 楼宇查询参数
+        let buildParams = config.threeDimensional.build;
+        foreignTableName = buildParams.foreignTableName;
+        layerName = `${LYconfig.map_dataset}@${LYconfig.datasource}`;
+        fields = buildParams.queryParams.fields;
+        url = LYconfig.map_url;
+        attributeFilter = "";
+        joinFilter = `${LYconfig.map_dataset}.${LYconfig.other_pro_name} = p.${
+          LYconfig.ProjectInfoName
+        }`;
+      } else if (context.state.currentList.name == "企业分析") {
+        let QYconfig = config.resourceList.filter(e => e.name == "企业分析")[0];
+        foreignTableName = QYconfig.infoData.tablename;
+        layerName = `${QYconfig.map_dataset}@${QYconfig.datasource}`;
+        fields = QYconfig.infoData.fields;
+        url = QYconfig.map_url;
+        attributeFilter = "";
+        joinFilter = `${QYconfig.map_dataset}.${QYconfig.left_table_id} = t.${
+          QYconfig.right_table_id
+        }`;
+      } else {
+        return;
+      }
+
+      let joinItem = new SuperMap.JoinItem({
+        foreignTableName: foreignTableName,
+        joinFilter: joinFilter,
+        joinType: "LEFTJOIN"
+      });
+      let param = new SuperMap.QueryByGeometryParameters({
+        geometry: L.point(coordnate),
+        queryParams: new SuperMap.FilterParameter({
+          name: layerName,
+          joinItems: [joinItem],
+          fields: fields,
+          attributeFilter: attributeFilter
+        })
+      });
+      L.supermap.queryService(url).queryByGeometry(param, serviceResult => {
+        if (!serviceResult.result) {
+          return;
+        }
+        let geojson = serviceResult.result.recordsets[0].features;
+        // geojson.color = e.color;
+        // geojson.name = e.name;
+
+        if (geojson.features.length === 0) {
+          return;
+        }
+
+        let properties = geojson.features[0].properties;
+
+        if (context.state.currentList.name == "楼宇分析") {
+          let quartet = {
+            label: "四方情况",
+            props: {}
+          };
+          let planning = {
+            label: "规划实施情况",
+            props: {}
+          };
+          let operation = {
+            label: "楼宇运营情况",
+            props: {}
+          };
+          let info = {
+            label: "基本情况",
+            props: {}
+          };
+          for (let key in properties) {
+            if (key.indexOf("四方") > -1) {
+              quartet.props[key] =
+                properties[key] == "" ? "暂无数据" : properties[key];
+            } else if (key.indexOf("规划实施") > -1) {
+              planning.props[key] =
+                properties[key] == "" ? "暂无数据" : properties[key];
+            } else if (key.indexOf("楼宇运营") > -1) {
+              operation.props[key] =
+                properties[key] == "" ? "暂无数据" : properties[key];
+            } else {
+              info.props[key] =
+                properties[key] == "" ? "暂无数据" : properties[key];
+            }
+          }
+          // 查询楼宇中的企业
+          let QYconfig = config.resourceList.filter(
+            e => e.name === "企业分析"
+          )[0];
+
+          let joinItem = new SuperMap.JoinItem({
+            foreignTableName: QYconfig.infoData.tablename,
+            joinFilter: `LY_CBD.楼宇名称 = t.projectname`,
+            joinType: "LEFTJOIN"
+          });
+          let param = new SuperMap.QueryBySQLParameters({
+            queryParams: new SuperMap.FilterParameter({
+              name: `LY_CBD@CBDGIS`,
+              joinItems: [joinItem],
+              fields: [`t.org_name as 企业名称`],
+              attributeFilter: `LY_CBD.楼宇名称 = '${properties.楼宇名称}'`
+            })
+          });
+          L.supermap.queryService(url).queryBySQL(param, serviceResult => {
+            let result = serviceResult.result;
+            let features = {};
+            let qy = {};
+            if (result.recordsets.length > 0) {
+              features = result.recordsets[0].features;
+              qy = {
+                label: "入驻企业",
+                props: features.features.reduce((p, c) => {
+                  p[c.properties.企业名称] = "企业详情";
+                  return p;
+                }, {})
+              };
+            }
+            context.commit("setInfoBoxData", {
+              title: "楼宇信息",
+              data: [info, quartet, planning, operation, qy]
+            });
+          });
+        } else if (context.state.currentList.name == "企业分析") {
+          let info = {
+            label: "基础信息",
+            props: {}
+          };
+          for (let key in properties) {
+            info.props[key] =
+              properties[key] == "" ? "暂无数据" : properties[key];
+          }
+          context.commit("setInfoBoxData", {
+            title: "企业信息",
+            data: [info]
+          });
+        }
+      });
+    },
+    //获取企业详情
+    getQYInfo(context, name) {
+      let foreignTableName, layerName, fields, attributeFilter, joinFilter, url;
+
+      let LYconfig = config.resourceList.filter(e => e.name == "楼宇分析")[0];
+      let QYconfig = config.resourceList.filter(e => e.name == "企业分析")[0];
+      // foreignTableName = QYconfig.infoData.tablename;
+      // layerName = `${QYconfig.map_dataset}@${QYconfig.datasource}`;
+      fields = QYconfig.infoData.fields;
+      url = LYconfig.map_url;
+      // attributeFilter = ` t.ORG_NAME = '${name}'`;
+      // joinFilter = `${QYconfig.map_dataset}.${QYconfig.left_table_id} = t.${
+      //   QYconfig.right_table_id
+      // }`;
+      // let joinItem = new SuperMap.JoinItem({
+      //   foreignTableName: foreignTableName,
+      //   joinFilter: joinFilter,
+      //   joinType: "LEFTJOIN"
+      // });
+      // let param = new SuperMap.QueryBySQLParameters({
+      //   queryParams: new SuperMap.FilterParameter({
+      //     name: layerName,
+      //     joinItems: [joinItem],
+      //     fields: fields,
+      //     attributeFilter: attributeFilter
+      //   })
+      // });
+
+      let joinItem = new SuperMap.JoinItem({
+        foreignTableName: QYconfig.infoData.tablename,
+        joinFilter: `LY_CBD.楼宇名称 = t.projectname`,
+        joinType: "LEFTJOIN"
+      });
+      let param = new SuperMap.QueryBySQLParameters({
+        queryParams: new SuperMap.FilterParameter({
+          name: `LY_CBD@CBDGIS`,
+          joinItems: [joinItem],
+          fields: fields,
+          attributeFilter: ` t.ORG_NAME = '${name}'`
+        })
+      });
+      L.supermap.queryService(url).queryBySQL(param, serviceResult => {
+        if (!serviceResult.result) {
+          return;
+        }
+        let geojson = serviceResult.result.recordsets[0].features;
+        // geojson.color = e.color;
+        // geojson.name = e.name;
+
+        if (geojson.features.length === 0) {
+          return;
+        }
+
+        let properties = geojson.features[0].properties;
+        let info = {
+          label: "基础信息",
+          props: {}
+        };
+
+        for (let key in properties) {
+          info.props[key] =
+            properties[key] == "" ? "暂无数据" : properties[key];
+        }
+
+        context.commit("setInfoBoxData", {
+          title: "企业信息",
+          data: [info]
+        });
+      });
+    }
+  }
+});

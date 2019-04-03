@@ -1,0 +1,97 @@
+<template>
+  <div :class="$style.root" v-show="visible" @blur="visible=!visible">
+    <!--1<input type="checkbox" v-model="list" value="1"><br>
+       2<input type="checkbox" v-model="list" value="2"><br>
+    3<input type="checkbox" v-model="list" value="3"><br>-->
+    <div :class="$style.title">
+      <p>区划网格</p>
+      <span @click="close()">   <Icon type="ios-backspace-outline"  title="关闭"/></span>
+    </div>
+    <ul>
+      <li v-for="(item,i) in list1" :key="i">
+        <Checkbox
+          :label="item.label"
+          :value="item.url"
+          :key="item.id"
+          @on-change="selectItem(item)"
+          v-model="item.checked"
+        >{{item.label}}</Checkbox>
+
+        <br>
+      </li>
+    </ul>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "GridMenu",
+  props: {
+    list: Array
+  },
+  data: function() {
+    return {
+      visible: false,
+      list1: this.list,
+      map: this.$parent.$refs.map
+    };
+  },
+  methods: {
+    selectItem: function(item) {
+      if (item.checked) {
+        this.map.overlayLayer(item);
+        this.$store.commit("addGrid", item)
+      } else {
+        this.map.removeLayer(item.id);
+        this.$store.commit("removeGrid", item)
+      }
+    },
+    close(){
+      this.$emit('close');
+    },
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  padding: 0.2rem 0;
+  background: url(../../assets/images/面板分解/top.png) top/100% 30px no-repeat,
+    url(../../assets/images/面板分解/未标题-1_06.png) bottom/100% 18px no-repeat,
+    url(../../assets/images/面板分解/1像素.png) 0 30px/100% calc(100% - 48px)
+      no-repeat;
+  color: #f9feff;
+  opacity: 0.9;
+  cursor: pointer;
+  min-width: 2rem;
+  font-size: 14px;
+  color: #ffffff;
+  position: absolute;
+  top: 0.55rem;
+  left: 2.5rem;
+  z-index: 1000;
+  cursor: pointer;
+  .title {
+    margin-left: 0.2rem;
+    border-bottom: 2px solid #59b3ff;
+    display: inline-block;
+    font-size: 0.13rem;
+    display: flex;
+    flex-direction: row;
+    p{
+      width: 80%;
+    }
+
+  }
+}
+.root {
+  li {
+    list-style: none;
+    margin: 0.1rem 0.08rem 0 0.08rem;
+    padding: 0 0.3rem;
+    font-size: 0.13rem;
+    line-height: 0.3rem;
+    display: block;
+  }
+}
+</style>

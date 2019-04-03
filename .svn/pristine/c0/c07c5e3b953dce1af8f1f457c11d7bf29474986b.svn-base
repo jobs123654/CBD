@@ -1,0 +1,55 @@
+<template>
+    <div >
+        <Head @enter="enter"></Head>
+
+        <div class="main">
+             <div class="left chart">
+                  <div class="chart_items">
+
+                  </div>
+                 <div class="chart_items">
+
+                 </div>
+                 <div class="chart_items">
+
+                 </div>
+             </div>
+
+            <div class="map">
+
+            </div>
+
+            <div class="right chart">
+                <div class="chart_items">
+
+                </div>
+                <div class="chart_items">
+
+                </div>
+                <div class="chart_items">
+
+                </div>
+
+        </div>
+    </div>
+    </div>
+</template>
+
+<script>
+    import Head from '../home/Head'
+    export default {
+        name: "Home",
+        components:{
+           Head,
+        },
+        methods:{
+            enter:function () {
+                this.$router.push("/index");
+            }
+        }
+    }
+</script>
+
+<style lang="scss" module>
+
+</style>

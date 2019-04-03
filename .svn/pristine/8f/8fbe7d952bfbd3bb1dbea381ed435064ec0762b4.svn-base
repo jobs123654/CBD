@@ -1,0 +1,38 @@
+<template>
+    <div :class="$style.root">
+        <Head @enter="enter"></Head>
+
+        <Map></Map>
+
+        <MapTool></MapTool>
+        <TabBtn></TabBtn>
+    </div>
+</template>
+
+<script>
+    import Head from '../home/Head'
+    import Map from '../home/Map'
+    import MapTool from '../toolbar/HomeMapTool'
+    import TabBtn from '../toolbar/TabBtn'
+
+    export default {
+        name: "Home",
+        components:{
+            MapTool,
+           Head,Map,TabBtn
+        },
+        methods:{
+            enter:function () {
+                this.$router.push("/index");
+            }
+        }
+    }
+</script>
+
+<style lang="scss" module>
+   .root{
+     height: 900px;
+       overflow: hidden;
+       position: relative;
+   }
+</style>

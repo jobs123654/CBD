@@ -1,0 +1,66 @@
+<template>
+   <div :class="$style.root" v-show="visible" @blur="visible=!visible">
+
+       <!--1<input type="checkbox" v-model="list" value="1"><br>
+       2<input type="checkbox" v-model="list" value="2"><br>
+       3<input type="checkbox" v-model="list" value="3"><br>-->
+       <ul>
+           <li v-for="item in list1">
+               <input type="checkbox"  :value="item.url"  :key="item.id" @click="selectItem(item)">{{item.label}}<br>
+           </li>
+       </ul>
+   </div>
+</template>
+
+<script>
+export default {
+   name:'GridMenu',
+    props:{
+      list:Array
+    },
+    data:function () {
+        return{
+            visible:false,
+            list1:this.list,
+            values:[],
+            map:this.$parent.$refs.map
+        }
+    },
+    mounted:function(){
+
+    },
+    methods:{
+        selectItem:function (item) {
+            item.checked=!item.checked;
+          /*this.values.forEach(function (i) {
+              if (item.id==i.id){
+                  console.log(item.id)
+              }
+          })*/
+          if (item.checked){
+             this.map.overlayLayer(item)
+          }else{
+              this.map.removeLayer(item.id)
+          }
+        }
+    }
+}
+</script>
+
+<style lang="scss" module>
+   .root{
+       width: 10%;
+       background: #213f5b;
+       border: 1px solid #019eea;
+       color: #ffffff;
+       position: absolute;
+       right: 6%;
+       top: 10%;
+       z-index: 9;
+   }
+    .root{
+        li{
+            list-style: none;
+        }
+    }
+</style>

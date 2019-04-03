@@ -1,0 +1,37 @@
+<template>
+  <div :class="$style.root">
+    <img
+      src="../assets/images/logo.png"
+      alt
+      style="vertical-align: bottom;cursor:pointer"
+      @click="togglePanel"
+    >
+    <span>{{ title }}</span>
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    title: String
+  },
+  methods: {
+    togglePanel() {
+      this.$emit("togglePanel");
+    }
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  font-size: 0.2rem;
+  line-height: 0.55rem;
+  color: #e2dfb8;
+  font-weight: bold;
+  font-family: "Microsoft YaHei";
+  text-align: center;
+  background: url(../assets/images/标题背景.png);
+  background-size: 100% 100%;
+}
+</style>

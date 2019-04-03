@@ -1,0 +1,64 @@
+<template>
+	<div :class="$style.root">
+
+	</div>
+</template>
+
+<script>
+	export default {
+		name: "test",
+		mounted() {
+			let option = {
+
+				title: {
+					text: 'CBD功能区GDP占比(%)',
+					textStyle: {
+						color: '#fffdff',
+						fontSize: 18,
+						fontFamily: 'Microsoft YaHei',
+						fontWeight: 'lighter',
+					},
+					top: 20,
+					left: 20,
+				},
+				series: [{
+					type: 'liquidFill',
+					radius: '60%',
+					outline: {
+                        borderDistance: 0, //外部轮廓与图表的距离 数字
+                        itemStyle:{
+                            borderWidth: 0,  //边框的宽度
+                            shadowColor: '#000' //外部轮廓的阴影颜色 
+                        }},
+					data: [0.56],
+					backgroundStyle: {
+						borderWidth: 5,
+						borderColor: 'rgb(77,191,240,0.8',
+						color: '#0d425e'
+					},
+					label: {
+						normal: {
+							formatter: 0.32 * 100 + '%',
+							textStyle: {
+								fontSize: 30
+							}
+
+						}
+					}
+				}]
+			};
+
+			var myChart = echarts.init(this.$el);
+			//使用制定的配置项和数据显示图表
+			myChart.setOption(option);
+
+		}
+	}
+</script>
+
+<style lang="scss" module>
+	.root {
+		width: 100%;
+		height: 100%;
+	}
+</style>

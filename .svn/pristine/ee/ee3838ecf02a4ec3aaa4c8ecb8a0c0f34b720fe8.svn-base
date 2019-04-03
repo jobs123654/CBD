@@ -1,0 +1,58 @@
+export default {
+  map: {
+    center: [512621.78, 306055.08],
+    zoom: 7,
+    spatialReference: {
+      projection: "identity",
+      resolutions: [
+        140.00000000000003,
+        70.00000000000001,
+        28.0,
+        14.0,
+        7.0,
+        2.8000000000000003,
+        1.4000000000000001,
+        0.5600000000000002
+      ],
+      fullExtent: {
+        top: 328267.01403450756,
+        left: 498274.8324539737,
+        bottom: 292043.1403319263,
+        right: 542368.7214544317
+      }
+    },
+    attribution: false
+  },
+  baseLayer: {
+    urlTemplate:
+      "http://192.168.46.30:8090/iserver/services/map-Map/wmts100/朝阳区矢量地图/default/Custom_朝阳区矢量地图/{z}/{y}/{x}.png",
+    tileSystem: [1, -1, 498274.8324539737, 328267.01403450756]
+  },
+  /*影像图*/
+  imgLayer:{
+    urlTemplate:
+        "http://192.168.46.30:8090/iserver/services/map-Map/wmts100/朝阳区影像地图/default/Custom_朝阳区影像地图/{z}/{y}/{x}.png",
+    tileSystem: [1, -1, 493348.00833995664, 333299.3163286119]
+  },
+  /*三维图*/
+  threeDimensional:{
+    option:{
+      animation:false, //动画控制不显示
+
+      baseLayerPicker:true,//图层控制显示
+
+      geocoder:false,//地名查找不显示
+
+      timeline:false,//时间线不显示
+
+      sceneModePicker:true,//投影方式显示
+      sceneMode: Cesium.SceneMode.COLUMBUS_VIEW
+    },
+    url:'http://192.168.46.228:8090/iserver/services/3D-XiCheng/rest/realspace',
+    center:{
+      x:499803.82791961904,
+      y:307720.93916380085,
+      z:229.84728803025882
+    }
+  },
+};

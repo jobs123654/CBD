@@ -1,0 +1,134 @@
+<template>
+    <div :class="$style.root">
+        <div :class="$style.item">
+            <h2>CBD区域楼宇/企业展示分析系统</h2>
+        </div>
+        <div :class="$style.item">
+            <span :class="$style.time">19:01:36</span>
+            <span :class="$style.date">
+                <span :class="$style.month">Mon</span>
+                <span :class="$style.time">2018-07-10</span>
+            </span>
+        </div>
+        <div :class="$style.item">
+            <span :class="$style.sun">@</span>
+            <div :class="$style.tt">
+                <span :class="$style.degree">20'</span>
+                <span :class="$style.font">晴</span>
+            </div>
+        </div>
+        <div :class="$style.item">
+            <div>PM2.5</div>
+            <div>40</div>
+        </div>
+        <div :class="$style.item" @click="enter">进入系统</div>
+    </div>
+</template>
+
+<script>
+    export default {
+        name: "Head",
+        data:function(){
+          return{
+
+          }
+        },
+        methods:{
+            enter:function () {
+                this.$emit('enter');
+            }
+        }
+    }
+</script>
+
+<style lang="scss" module>
+    $s:#fff;
+    $title_font_color:black;
+    $base_small_font:8px;
+    @mixin cborder($color){
+        border:1px solid $color;
+    }
+    .root{
+        overflow: hidden;
+        width: 100%;
+
+        height:70px;
+        line-height: 70px;;
+        @include cborder(grey);
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: left;
+        .item{
+
+        }
+        .item:nth-of-type(1){
+            width: 20%;
+              h2{
+                  color: $title_font_color;
+                  flew-grow:1
+              }
+            margin: 0 0.2rem;
+        }
+        .item:nth-of-type(2){
+            flew-grow:2;
+            width: 12%;
+
+            display: flex;
+            flex-flow: row nowrap;
+            .time{
+                font-size: 29px;
+            }
+            .date{
+                margin-left: 0.05rem;
+
+                display: flex;
+                flex-direction: column;
+                line-height: 13px;
+                padding: 0  0 0.1rem;
+                font-size: $base_small_font;
+                span{
+                    /*width:1%;*/
+                }
+                .month{
+                    margin-top: 0.2rem;
+
+                }
+                .time{
+                    font-size: $base_small_font;
+                }
+            }
+        }
+        .item:nth-of-type(3){
+            flew-grow:5;
+            width: 4%;
+            /*background-color: #66ccee;*/
+            display: flex;
+            .sun{
+             font-size: 20px;
+            }
+            .tt{
+                margin: 0.23rem 0 0 0.1rem;
+                line-height: 13px;
+                font-size: $base_small_font;
+                display: flex;
+                flex-direction: column;
+            }
+
+
+        }
+        .item:nth-of-type(4){
+            width: 5%;
+            padding-top: 0.2rem;
+            font-size: $base_small_font;
+            div{
+
+                line-height: 15px;
+            }
+        }
+        .item:nth-of-type(5){
+            margin-left: 50%;
+            width: 5%;
+            cursor: pointer;
+        }
+    }
+</style>

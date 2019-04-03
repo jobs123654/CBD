@@ -1,0 +1,92 @@
+<template>
+  <div :class="$style.root" v-show="list.name">
+    <div :class="$style.title">{{ list.name }}</div>
+    <div v-for="(item, i) in list.children" :key="i" @click="showThirdList(i)">
+      <span :class="i === itemIndex ? [$style.item, $style.current] : $style.item">
+        <img src="../../../assets/images/point@.png" v-if="i === itemIndex">
+        <img src="../../../assets/images/point.png" v-else>
+        {{ item.name }}
+      </span>
+      <div
+        v-for="(type, j) in item.children"
+        :key="j"
+        v-show="i === itemIndex"
+        :class="$style.thirdItem"
+      >
+        <Checkbox @on-change="selectType(type)">{{ type.name }}</Checkbox>
+        <span :class="$style.color">
+          <ColorPicker v-model="type.color" alpha size="small" @on-change="selectColor" />
+        </span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    list: Object
+  },
+  data() {
+    return {
+      itemIndex: -1
+    };
+  },
+  watch: {
+    list() {
+      this.itemIndex = -1;
+    }
+  },
+  methods: {
+    showThirdList(i) {
+      this.itemIndex = i;
+    },
+    selectType(item) {
+      console.log(item.name)
+    },
+    selectColor(color) {
+      console.log(color)
+    }
+  }
+};
+</script>
+
+<style lang="scss" module>
+.root {
+  padding: 0.2rem 0;
+  background: url(../../../assets/images/面板分解/top.png) top/100% 30px
+      no-repeat,
+    url(../../../assets/images/面板分解/未标题-1_06.png) bottom/100% 18px
+      no-repeat,
+    url(../../../assets/images/面板分解/1像素.png) 0 30px/100% calc(100% - 48px)
+      no-repeat;
+  color: #f9feff;
+  opacity: 0.9;
+  cursor: pointer;
+  min-width: 2rem;
+  .title {
+    margin-left: 0.2rem;
+    border-bottom: 2px solid #59b3ff;
+    display: inline-block;
+    font-size: 0.13rem;
+  }
+  .current {
+    background: url(../../../assets/images/面板分解/选中.png);
+    color: #2d342a;
+  }
+  .item {
+    margin: 0.1rem 0.08rem 0 0.08rem;
+    padding: 0 0.3rem;
+    font-size: 0.13rem;
+    line-height: 0.3rem;
+    display: block;
+  }
+  .thirdItem {
+    font-size: 0.12rem;
+    margin: 0 10px;
+    padding: 5px 0.4rem;
+    line-height: 0.3rem;
+    background: #123a59;
+  }
+}
+</style>
